@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zynxbd Admin Panel</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body{
+background:#f8fafc;
+}
+
+.card{
+background:#fff;
+border-radius:16px;
+padding:20px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.hidden{
+display:none;
+}
+</style>
+
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+
+<div id="loginPage" class="min-h-screen flex items-center justify-center p-4">
+
+<div class="card w-full max-w-md">
+
+<h2 class="text-3xl font-bold text-center mb-6">
+Admin Login
+</h2>
+
+<form id="loginForm" class="space-y-4">
+
+<input
+type="email"
+id="email"
+placeholder="Admin Email"
+required
+class="w-full border p-3 rounded-lg">
+
+<input
+type="password"
+id="password"
+placeholder="Password"
+required
+class="w-full border p-3 rounded-lg">
+
+<button
+type="submit"
+class="w-full bg-pink-500 text-white p-3 rounded-lg">
+Login
+</button>
+
+</form>
+
+<p id="loginError" class="text-red-500 mt-3 text-center"></p>
+
+</div>
+
+</div>
+
+<!-- DASHBOARD -->
+
+<div id="dashboardPage" class="hidden">
+
+<header class="bg-white shadow p-4 flex justify-between items-center">
+
+<h1 class="text-2xl font-bold">
+Zynxbd Admin Dashboard
+</h1>
+
+<button
+id="logoutBtn"
+class="bg-red-500 text-white px-4 py-2 rounded">
+Logout
+</button>
+
+</header>
+
+<div class="p-6">
+
+<!-- STATS -->
+
+<div class="grid md:grid-cols-4 gap-4">
+
+<div class="card">
+<h3>Total Orders</h3>
+<p id="totalOrders" class="text-3xl font-bold">0</p>
+</div>
+
+<div class="card">
+<h3>Pending Orders</h3>
+<p id="pendingOrders" class="text-3xl font-bold">0</p>
+</div>
+
+<div class="card">
+<h3>Delivered Orders</h3>
+<p id="deliveredOrders" class="text-3xl font-bold">0</p>
+</div>
+
+<div class="card">
+<h3>Today Sales</h3>
+<p id="todaySales" class="text-3xl font-bold">0 ৳</p>
+</div>
+
+</div>
+
+<!-- ORDERS -->
+
+<div class="card mt-6">
+
+<h2 class="text-xl font-bold mb-4">
+Orders
+</h2>
+
+<div class="overflow-auto">
+
+<table class="w-full">
+
+<thead>
+
+<tr class="border-b">
+
+<th class="p-2 text-left">Customer</th>
+<th class="p-2 text-left">Phone</th>
+<th class="p-2 text-left">Amount</th>
+<th class="p-2 text-left">Status</th>
+<th class="p-2 text-left">Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="ordersTable">
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* SUPABASE */
+
+const SUPABASE_URL =
+"https://omotctqkemtuogpnlywo.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_6vLOupcl0H3fPfkOEdHYuw_mNCC_3IO";
+
+const supabase =
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+/* LOGIN */
+
+const loginForm =
+document.getElementById("loginForm");
+
+loginForm.addEventListener(
+"submit",
+async(e)=>{
+
+e.preventDefault();
+
+const email =
+document.getElementById("email").value;
+
+const password =
+document.getElementById("password").value;
+
+const {error} =
+await supabase.auth.signInWithPassword({
+email,
+password
+});
+
+if(error){
+
+document.getElementById(
+"loginError"
+).innerText = error.message;
+
+return;
+
+}
+
+showDashboard();
+
+}
+);
+
+/* CHECK SESSION */
+
+async function checkSession(){
+
+const {
+data:{session}
+}
+=
+await supabase.auth.getSession();
+
+if(session){
+
+showDashboard();
+
+}
+
+}
+
+function showDashboard(){
+
+document
+.getElementById("loginPage")
+.classList.add("hidden");
+
+document
+.getElementById("dashboardPage")
+.classList.remove("hidden");
+
+loadDashboard();
+
+}
+
+/* LOGOUT */
+
+document
+.getElementById("logoutBtn")
+.addEventListener(
+"click",
+async()=>{
+
+await supabase.auth.signOut();
+
+location.reload();
+
+}
+);
+
+checkSession();
+
+</script>
+
+</body>
+</html>
