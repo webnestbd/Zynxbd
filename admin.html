@@ -298,17 +298,29 @@ Close
 
 /* SUPABASE */
 
+console.log("Initializing Supabase...");
+
 const SUPABASE_URL =
 "https://omotctqkemtuogpnlywo.supabase.co";
 
 const SUPABASE_KEY =
 "sb_publishable_6vLOupcl0H3fPfkOEdHYuw_mNCC_3IO";
 
+console.log("Supabase URL:", SUPABASE_URL);
+console.log("window.supabase exists:", !!window.supabase);
+
+if(!window.supabase){
+  console.error("Supabase library not loaded from CDN!");
+  document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:50px;'>Error: Supabase library failed to load. Please refresh the page.</h1>";
+}
+
 const supabase =
 window.supabase.createClient(
 SUPABASE_URL,
 SUPABASE_KEY
 );
+
+console.log("Supabase client created:", !!supabase);
 
 /* LOGIN */
 
@@ -321,19 +333,36 @@ async(e)=>{
 
 e.preventDefault();
 
+console.log("Login form submitted");
+
 const email =
 document.getElementById("email").value;
 
 const password =
 document.getElementById("password").value;
 
-const {error} =
+console.log("Email:", email);
+console.log("Supabase object exists:", !!supabase);
+
+if(!supabase){
+  console.error("Supabase not loaded!");
+  document.getElementById("loginError").innerText = "Supabase not loaded";
+  return;
+}
+
+try{
+
+const {data, error} =
 await supabase.auth.signInWithPassword({
 email,
 password
 });
 
+console.log("Login response:", {data, error});
+
 if(error){
+
+console.error("Login error:", error.message);
 
 document.getElementById(
 "loginError"
@@ -343,7 +372,21 @@ return;
 
 }
 
+console.log("Login successful, showing dashboard");
+
 showDashboard();
+
+}
+
+catch(err){
+
+console.error("Login exception:", err);
+
+document.getElementById(
+"loginError"
+).innerText = "Error: " + err.message;
+
+}
 
 }
 );
@@ -352,13 +395,20 @@ showDashboard();
 
 async function checkSession(){
 
+console.log("Checking session...");
+
 const {
 data:{session}
 }
 =
 await supabase.auth.getSession();
 
+console.log("Session exists:", !!session);
+console.log("Session data:", session);
+
 if(session){
+
+console.log("User logged in, showing dashboard");
 
 showDashboard();
 
