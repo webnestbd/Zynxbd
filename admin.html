@@ -488,7 +488,15 @@ class="bg-blue-500 text-white px-2 py-1 rounded mr-2">
 View
 </button>
 
-        <td class="p-2">
+    <td class="p-2">
+
+<input
+value="${order.admin_note || ''}"
+onchange="saveNote(${order.id},this.value)"
+class="border p-1 rounded w-full">
+
+</td>
+<td class="p-2">
 
           <select
           onchange="updateStatus(${order.id},this.value)"
