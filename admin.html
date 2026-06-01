@@ -881,6 +881,28 @@ a.click();
 checkSession();
 
 </script>
+<div
+id="orderModal"
+class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
 
+<div class="bg-white p-6 rounded-lg w-full max-w-lg">
+
+<h2 class="text-xl font-bold mb-4">
+Order Details
+</h2>
+
+<div id="orderDetails"></div>
+
+<button
+onclick="closeModal()"
+class="bg-red-500 text-white px-4 py-2 rounded mt-4">
+
+Close
+
+</button>
+
+</div>
+
+</div>
 </body>
 </html>
