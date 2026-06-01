@@ -142,28 +142,8 @@ Logout
 </div>
 </div>
 
-<!-- ORDERS -->
+<!-- PRODUCT MANAGEMENT -->
 
-<div class="card mt-6">
-
-<h2>Orders</h2>
-
-<input
-id="orderSearch"
-placeholder="Search customer, phone..."
-class="border p-2 rounded w-full mb-4">
-
-<button
-onclick="exportCSV()"
-class="bg-green-600 text-white px-4 py-2 rounded mb-4">
-
-Export CSV
-
-</button>
-
-<!-- Orders Table -->
-
-</div
 <div class="card mt-6">
 
 <h2 class="text-xl font-bold mb-4">
@@ -203,7 +183,7 @@ type="number"
 placeholder="Stock"
 class="border p-2 rounded">
 
-<button
+<button type="submit"
 class="bg-green-500 text-white p-2 rounded">
 Add Product
 </button>
@@ -218,10 +198,10 @@ Add Product
 
 <tr class="border-b">
 
-<th>Name</th>
-<th>Price</th>
-<th>Stock</th>
-<th>Action</th>
+<th class="p-2 text-left">Name</th>
+<th class="p-2 text-left">Price</th>
+<th class="p-2 text-left">Stock</th>
+<th class="p-2 text-left">Action</th>
 
 </tr>
 
@@ -234,9 +214,27 @@ Add Product
 </div>
 
 </div>
+
+<!-- ORDERS -->
+
+<div class="card mt-6">
+
 <h2 class="text-xl font-bold mb-4">
 Orders
 </h2>
+
+<input
+id="orderSearch"
+placeholder="Search customer, phone..."
+class="border p-2 rounded w-full mb-4">
+
+<button
+onclick="exportCSV()"
+class="bg-green-600 text-white px-4 py-2 rounded mb-4">
+
+Export CSV
+
+</button>
 
 <div class="overflow-auto">
 
@@ -250,7 +248,7 @@ Orders
 <th class="p-2 text-left">Phone</th>
 <th class="p-2 text-left">Amount</th>
 <th class="p-2 text-left">Status</th>
-  <th class="p-2 text-left">Admin Note</th>
+<th class="p-2 text-left">Admin Note</th>
 <th class="p-2 text-left">Action</th>
 
 </tr>
@@ -266,6 +264,31 @@ Orders
 </div>
 
 </div>
+
+</div>
+
+</div>
+
+<!-- ORDER MODAL -->
+<div
+id="orderModal"
+class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+
+<div class="bg-white p-6 rounded-lg w-full max-w-lg">
+
+<h2 class="text-xl font-bold mb-4">
+Order Details
+</h2>
+
+<div id="orderDetails"></div>
+
+<button
+onclick="closeModal()"
+class="bg-red-500 text-white px-4 py-2 rounded mt-4">
+
+Close
+
+</button>
 
 </div>
 
@@ -371,6 +394,7 @@ location.reload();
 
 }
 );
+
 /* DASHBOARD DATA */
 
 async function loadDashboard() {
@@ -509,6 +533,16 @@ async function loadOrders(){
           ${order.status || "Pending"}
           </span>
         </td>
+
+        <td class="p-2">
+
+<input
+value="${order.admin_note || ''}"
+onchange="saveNote(${order.id},this.value)"
+class="border p-1 rounded w-full">
+
+</td>
+
         <td class="p-2">
 
 <button
@@ -517,20 +551,9 @@ class="bg-blue-500 text-white px-2 py-1 rounded mr-2">
 View
 </button>
 
-</td>
- <td class="p-2">
-
-<input
-value="${order.admin_note || ''}"
-onchange="saveNote(${order.id},this.value)"
-class="border p-1 rounded w-full">
-
-</td>
-<td class="p-2">
-
-          <select
-          onchange="updateStatus(${order.id},this.value)"
-          class="border p-1 rounded">
+<select
+onchange="updateStatus(${order.id},this.value)"
+class="border p-1 rounded">
 
             <option value="">
             Change
@@ -612,58 +635,102 @@ alert(err.message);
 }
 
 }
-  
+
+/* SAVE NOTE */
+
+window.saveNote =
+async function(
+id,
+note
+){
+
+  try{
+
+    const {error} =
+    await supabase
+    .from("orders")
+    .update({
+      admin_note: note
+    })
+    .eq("id",id);
+
+    if(error) throw error;
+
+    alert("Note saved");
+
+  }
+
+  catch(err){
+
+    console.error(err);
+
+  }
+
+}
+
+/* LOAD PRODUCTS */
+
 async function loadProducts(){
 
-const {data,error} =
-await supabase
-.from("products")
-.select("*");
+  try{
 
-if(error) return;
+    const {data,error} =
+    await supabase
+    .from("products")
+    .select("*");
 
-const table =
-document.getElementById(
-"productTable"
-);
+    if(error) throw error;
 
-table.innerHTML="";
+    const table =
+    document.getElementById(
+    "productTable"
+    );
 
-data.forEach(product=>{
+    table.innerHTML="";
 
-table.innerHTML += `
-<tr class="border-b">
+    data.forEach(product=>{
 
-<td>${product.name}</td>
+    table.innerHTML += `
+    <tr class="border-b">
 
-<td>${product.price}</td>
+    <td class="p-2">${product.name}</td>
 
-<td>${product.stock}</td>
+    <td class="p-2">${product.price}</td>
 
-<td class="space-x-2">
+    <td class="p-2">${product.stock}</td>
 
-<button
-onclick="editProduct(${product.id})"
-class="bg-blue-500 text-white px-2 py-1 rounded">
+    <td class="p-2 space-x-2">
 
-Edit
+    <button
+    onclick="editProduct(${product.id})"
+    class="bg-blue-500 text-white px-2 py-1 rounded">
 
-</button>
+    Edit
 
-<button
-onclick="deleteProduct(${product.id})"
-class="bg-red-500 text-white px-2 py-1 rounded">
+    </button>
 
-Delete
+    <button
+    onclick="deleteProduct(${product.id})"
+    class="bg-red-500 text-white px-2 py-1 rounded">
 
-</button>
+    Delete
 
-</td>
+    </button>
 
-</tr>
-`;
+    </td>
 
-});
+    </tr>
+    `;
+
+    });
+
+  }
+
+  catch(err){
+
+    console.error(err);
+
+  }
 
 }
 
@@ -717,147 +784,186 @@ active:true
 
 };
 
-const {error} =
-await supabase
-.from("products")
-.insert([product]);
+try{
 
-if(error){
+  const {error} =
+  await supabase
+  .from("products")
+  .insert([product]);
 
-alert(error.message);
+  if(error) throw error;
 
-return;
+  alert("Product Added");
+
+  e.target.reset();
+
+  await loadProducts();
 
 }
 
-alert("Product Added");
+catch(err){
 
-e.target.reset();
+  alert(err.message);
 
-loadProducts();
+}
 
 }
 );
 
-/* DELETE PRODUCT */
+/* EDIT PRODUCT */
+
 window.editProduct =
 async function(id){
 
-const {data,error} =
-await supabase
-.from("products")
-.select("*")
-.eq("id",id)
-.single();
+  try{
 
-if(error) return;
+    const {data,error} =
+    await supabase
+    .from("products")
+    .select("*")
+    .eq("id",id)
+    .single();
 
-const newPrice =
-prompt(
-"New Price",
-data.price
-);
+    if(error) throw error;
 
-if(newPrice===null) return;
+    const newPrice =
+    prompt(
+      "New Price",
+      data.price
+    );
 
-const newStock =
-prompt(
-"New Stock",
-data.stock
-);
+    if(newPrice===null) return;
 
-if(newStock===null) return;
+    const newStock =
+    prompt(
+      "New Stock",
+      data.stock
+    );
 
-const {error:updateError} =
-await supabase
-.from("products")
-.update({
+    if(newStock===null) return;
 
-price:Number(newPrice),
+    const {error:updateError} =
+    await supabase
+    .from("products")
+    .update({
 
-stock:Number(newStock)
+    price:Number(newPrice),
 
-})
-.eq("id",id);
+    stock:Number(newStock)
 
-if(updateError){
+    })
+    .eq("id",id);
 
-alert(updateError.message);
+    if(updateError) throw updateError;
 
-return;
+    alert("Product Updated");
+
+    await loadProducts();
+
+  }
+
+  catch(err){
+
+    console.error(err);
+
+  }
 
 }
 
-alert("Product Updated");
+/* DELETE PRODUCT */
 
-loadProducts();
-
-}
 window.deleteProduct =
 async function(id){
 
-if(
-!confirm(
-"Delete Product?"
-)
-) return;
+  if(
+  !confirm(
+    "Delete Product?"
+  )
+  ) return;
 
-const {error} =
-await supabase
-.from("products")
-.delete()
-.eq("id",id);
+  try{
 
-if(error){
+    const {error} =
+    await supabase
+    .from("products")
+    .delete()
+    .eq("id",id);
 
-alert(error.message);
+    if(error) throw error;
 
-return;
+    alert("Product Deleted");
+
+    await loadProducts();
+
+  }
+
+  catch(err){
+
+    console.error(err);
+
+  }
+
+}
+
+/* VIEW ORDER */
+
+window.viewOrder =
+async function(id){
+
+  try{
+
+    const {data,error} =
+    await supabase
+    .from("orders")
+    .select("*")
+    .eq("id",id)
+    .single();
+
+    if(error) throw error;
+
+    document.getElementById(
+    "orderDetails"
+    ).innerHTML = `
+
+    <p><b>Name:</b> ${data.customer_name||""}</p>
+
+    <p><b>Phone:</b> ${data.phone||""}</p>
+
+    <p><b>Email:</b> ${data.email||""}</p>
+
+    <p><b>Address:</b> ${data.address||""}</p>
+
+    <p><b>Product:</b> ${data.product_name||""}</p>
+
+    <p><b>Quantity:</b> ${data.quantity||0}</p>
+
+    <p><b>Amount:</b> ${data.total_price||0} ৳</p>
+
+    <p><b>Status:</b> ${data.status||""}</p>
+
+    <p><b>Payment Method:</b> ${data.payment_method||""}</p>
+
+    <p><b>Transaction ID:</b> ${data.trx_id||""}</p>
+
+    <p><b>Admin Note:</b> ${data.admin_note||""}</p>
+
+    `;
+
+    document
+    .getElementById("orderModal")
+    .classList.remove("hidden");
+
+  }
+
+  catch(err){
+
+    console.error(err);
+
+  }
 
 }
 
-loadProducts();
-
-}
-}
-  async function viewOrder(id){
-
-const {data,error} =
-await supabase
-.from("orders")
-.select("*")
-.eq("id",id)
-.single();
-
-if(error) return;
-
-document.getElementById(
-"orderDetails"
-).innerHTML = `
-
-<p><b>Name:</b> ${data.customer_name||""}</p>
-
-<p><b>Phone:</b> ${data.phone||""}</p>
-
-<p><b>Email:</b> ${data.email||""}</p>
-
-<p><b>Address:</b> ${data.address||""}</p>
-
-<p><b>Amount:</b> ${data.total_price||0} ৳</p>
-
-<p><b>Status:</b> ${data.status||""}</p>
-
-<p><b>Payment:</b> ${data.payment_method||""}</p>
-
-<p><b>TRX:</b> ${data.trx_id||""}</p>
-
-`;
-
-document
-.getElementById("orderModal")
-.classList.remove("hidden");
-
-}
+/* CLOSE MODAL */
 
 function closeModal(){
 
@@ -866,58 +972,74 @@ document
 .classList.add("hidden");
 
 }
-  /* MONTHLY SALES */
+
+/* MONTHLY SALES */
 
 async function loadRevenue(){
 
-const {data} =
-await supabase
-.from("orders")
-.select("*");
+  try{
 
-let monthly = 0;
-let total = 0;
+    const {data, error} =
+    await supabase
+    .from("orders")
+    .select("*");
 
-const currentMonth =
-new Date().getMonth();
+    if(error) throw error;
 
-data.forEach(order=>{
+    let monthly = 0;
+    let total = 0;
 
-if(order.status==="Delivered"){
+    const currentMonth =
+    new Date().getMonth();
 
-total += Number(
-order.total_price || 0
-);
+    data.forEach(order=>{
 
-const month =
-new Date(
-order.created_at
-).getMonth();
+    if(order.status==="Delivered"){
 
-if(month===currentMonth){
+    total += Number(
+    order.total_price || 0
+    );
 
-monthly += Number(
-order.total_price || 0
-);
+    const month =
+    new Date(
+    order.created_at
+    ).getMonth();
+
+    if(month===currentMonth){
+
+    monthly += Number(
+    order.total_price || 0
+    );
+
+    }
+
+    }
+
+    });
+
+    document.getElementById(
+    "monthlySales"
+    ).innerText =
+    monthly + " ৳";
+
+    document.getElementById(
+    "totalRevenue"
+    ).innerText =
+    total + " ৳";
+
+  }
+
+  catch(err){
+
+    console.error(err);
+
+  }
 
 }
 
-}
+/* SEARCH ORDERS */
 
-});
-
-document.getElementById(
-"monthlySales"
-).innerText =
-monthly + " ৳";
-
-document.getElementById(
-"totalRevenue"
-).innerText =
-total + " ৳";
-
-}
-  document
+document
 .getElementById("orderSearch")
 .addEventListener(
 "input",
@@ -944,65 +1066,61 @@ text.includes(keyword)
 });
 
 });
-  async function exportCSV(){
 
-const {data,error} =
-await supabase
-.from("orders")
-.select("*");
+/* EXPORT CSV */
 
-if(error) return;
+async function exportCSV(){
 
-let csv =
-"ID,Customer,Phone,Amount,Status\n";
+  try{
 
-data.forEach(order=>{
+    const {data,error} =
+    await supabase
+    .from("orders")
+    .select("*");
 
-csv +=
-`${order.id},
-${order.customer_name},
-${order.phone},
-${order.total_price},
-${order.status}\n`;
+    if(error) throw error;
 
-});
+    let csv =
+    "ID,Customer,Phone,Amount,Status\n";
 
-const blob =
-new Blob([csv],{
-type:"text/csv"
-});
+    data.forEach(order=>{
 
-const url =
-URL.createObjectURL(blob);
+    csv +=
+    `${order.id},${order.customer_name},${order.phone},${order.total_price},${order.status}\n`;
 
-const a =
-document.createElement("a");
+    });
 
-a.href = url;
+    const blob =
+    new Blob([csv],{
+    type:"text/csv"
+    });
 
-a.download =
-"orders.csv";
+    const url =
+    URL.createObjectURL(blob);
 
-a.click();
+    const a =
+    document.createElement("a");
 
-}
-  window.saveNote =
-async function(
-id,
-note
-){
+    a.href = url;
 
-await supabase
-.from("orders")
-.update({
+    a.download =
+    "orders.csv";
 
-admin_note:note
+    a.click();
 
-})
-.eq("id",id);
+  }
+
+  catch(err){
+
+    console.error(err);
+
+  }
 
 }
-  setInterval(()=>{
+
+/* AUTO REFRESH */
+
+setInterval(()=>{
 
 const dashboard =
 document.getElementById(
@@ -1020,31 +1138,12 @@ loadDashboard();
 }
 
 },30000);
+
+/* INITIALIZE */
+
 checkSession();
 
 </script>
-<div
-id="orderModal"
-class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
 
-<div class="bg-white p-6 rounded-lg w-full max-w-lg">
-
-<h2 class="text-xl font-bold mb-4">
-Order Details
-</h2>
-
-<div id="orderDetails"></div>
-
-<button
-onclick="closeModal()"
-class="bg-red-500 text-white px-4 py-2 rounded mt-4">
-
-Close
-
-</button>
-
-</div>
-
-</div>
 </body>
 </html>
