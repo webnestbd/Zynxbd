@@ -970,6 +970,24 @@ admin_note:note
 .eq("id",id);
 
 }
+  setInterval(()=>{
+
+const dashboard =
+document.getElementById(
+"dashboardPage"
+);
+
+if(
+!dashboard.classList.contains(
+"hidden"
+)
+){
+
+loadDashboard();
+
+}
+
+},30000);
 checkSession();
 
 </script>
