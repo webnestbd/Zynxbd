@@ -836,6 +836,48 @@ text.includes(keyword)
 });
 
 });
+  async function exportCSV(){
+
+const {data,error} =
+await supabase
+.from("orders")
+.select("*");
+
+if(error) return;
+
+let csv =
+"ID,Customer,Phone,Amount,Status\n";
+
+data.forEach(order=>{
+
+csv +=
+`${order.id},
+${order.customer_name},
+${order.phone},
+${order.total_price},
+${order.status}\n`;
+
+});
+
+const blob =
+new Blob([csv],{
+type:"text/csv"
+});
+
+const url =
+URL.createObjectURL(blob);
+
+const a =
+document.createElement("a");
+
+a.href = url;
+
+a.download =
+"orders.csv";
+
+a.click();
+
+}
 checkSession();
 
 </script>
