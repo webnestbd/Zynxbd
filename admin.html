@@ -712,6 +712,52 @@ loadProducts();
 
 }
 }
+  async function viewOrder(id){
+
+const {data,error} =
+await supabase
+.from("orders")
+.select("*")
+.eq("id",id)
+.single();
+
+if(error) return;
+
+document.getElementById(
+"orderDetails"
+).innerHTML = `
+
+<p><b>Name:</b> ${data.customer_name||""}</p>
+
+<p><b>Phone:</b> ${data.phone||""}</p>
+
+<p><b>Email:</b> ${data.email||""}</p>
+
+<p><b>Address:</b> ${data.address||""}</p>
+
+<p><b>Amount:</b> ${data.total_price||0} ৳</p>
+
+<p><b>Status:</b> ${data.status||""}</p>
+
+<p><b>Payment:</b> ${data.payment_method||""}</p>
+
+<p><b>TRX:</b> ${data.trx_id||""}</p>
+
+`;
+
+document
+.getElementById("orderModal")
+.classList.remove("hidden");
+
+}
+
+function closeModal(){
+
+document
+.getElementById("orderModal")
+.classList.add("hidden");
+
+}
   /* MONTHLY SALES */
 
 async function loadRevenue(){
