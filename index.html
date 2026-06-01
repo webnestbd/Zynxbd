@@ -304,8 +304,8 @@
   async function loadProducts() {
     loader.classList.remove('hidden');
     try {
-      const SUPABASE_URL = "https://rvbdzbqjrsavwdbxutfo.supabase.co";
-      const SUPABASE_ANON = "sb_publishable_qt8sN5cY-JrxmaKrxSEv5Q_Q4JJdNra";
+      const SUPABASE_URL = "https://omotctqkemtuogpnlywo.supabase.co";
+      const SUPABASE_ANON = "sb_publishable_6vLOupcl0H3fPfkOEdHYuw_mNCC_3IO";
       const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON);
       const { data, error } = await supabase.from('Products').select('*');
       if (error) throw error;
