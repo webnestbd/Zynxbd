@@ -337,9 +337,13 @@ location.reload();
 
 async function loadDashboard() {
 
-  await loadStats();
+await loadStats();
 
-  await loadOrders();
+await loadOrders();
+
+await loadRevenue();
+
+await loadProducts();
 
 }
 
