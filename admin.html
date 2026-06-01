@@ -255,7 +255,227 @@ location.reload();
 
 }
 );
+/* DASHBOARD DATA */
 
+async function loadDashboard() {
+
+  await loadStats();
+
+  await loadOrders();
+
+}
+
+/* LOAD STATS */
+
+async function loadStats() {
+
+  try {
+
+    const { data: orders, error } =
+    await supabase
+    .from("orders")
+    .select("*");
+
+    if(error) throw error;
+
+    const totalOrders = orders.length;
+
+    const pendingOrders =
+    orders.filter(
+      o => o.status === "Pending"
+    ).length;
+
+    const deliveredOrders =
+    orders.filter(
+      o => o.status === "Delivered"
+    ).length;
+
+    const today = new Date()
+    .toISOString()
+    .split("T")[0];
+
+    let todaySales = 0;
+
+    orders.forEach(order => {
+
+      const orderDate =
+      new Date(order.created_at)
+      .toISOString()
+      .split("T")[0];
+
+      if(
+        orderDate === today &&
+        order.status === "Delivered"
+      ){
+        todaySales +=
+        Number(order.total_price || 0);
+      }
+
+    });
+
+    document.getElementById(
+      "totalOrders"
+    ).innerText = totalOrders;
+
+    document.getElementById(
+      "pendingOrders"
+    ).innerText = pendingOrders;
+
+    document.getElementById(
+      "deliveredOrders"
+    ).innerText = deliveredOrders;
+
+    document.getElementById(
+      "todaySales"
+    ).innerText =
+    todaySales + " ৳";
+
+  }
+
+  catch(err){
+
+    console.error(err);
+
+  }
+
+}
+
+/* LOAD ORDERS */
+
+async function loadOrders(){
+
+  try{
+
+    const {
+      data,
+      error
+    } =
+    await supabase
+    .from("orders")
+    .select("*")
+    .order(
+      "created_at",
+      {ascending:false}
+    );
+
+    if(error) throw error;
+
+    const tbody =
+    document.getElementById(
+      "ordersTable"
+    );
+
+    tbody.innerHTML = "";
+
+    data.forEach(order=>{
+
+      tbody.innerHTML += `
+      <tr class="border-b">
+
+        <td class="p-2">
+          ${order.customer_name || ""}
+        </td>
+
+        <td class="p-2">
+          ${order.phone || ""}
+        </td>
+
+        <td class="p-2">
+          ${order.total_price || 0} ৳
+        </td>
+
+        <td class="p-2">
+          <span class="font-semibold">
+          ${order.status || "Pending"}
+          </span>
+        </td>
+
+        <td class="p-2">
+
+          <select
+          onchange="updateStatus(${order.id},this.value)"
+          class="border p-1 rounded">
+
+            <option value="">
+            Change
+            </option>
+
+            <option value="Pending">
+            Pending
+            </option>
+
+            <option value="Processing">
+            Processing
+            </option>
+
+            <option value="Delivered">
+            Delivered
+            </option>
+
+            <option value="Cancelled">
+            Cancelled
+            </option>
+
+          </select>
+
+        </td>
+
+      </tr>
+      `;
+
+    });
+
+  }
+
+  catch(err){
+
+    console.error(err);
+
+  }
+
+}
+
+/* UPDATE STATUS */
+
+window.updateStatus =
+async function(
+  id,
+  status
+){
+
+  if(!status) return;
+
+  try{
+
+    const {error} =
+    await supabase
+    .from("orders")
+    .update({
+      status: status,
+      updated_at:
+      new Date().toISOString()
+    })
+    .eq("id",id);
+
+    if(error) throw error;
+
+    alert(
+      "Order Updated Successfully"
+    );
+
+    await loadStats();
+
+    await loadOrders();
+
+  }
+
+  catch(err){
+
+    alert(err.message);
+
+  }
+
+}
 checkSession();
 
 </script>
