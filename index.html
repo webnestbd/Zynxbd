@@ -284,7 +284,7 @@
       created_at: new Date().toISOString()
     };
     // Send to Telegram (using your bot token)
-    const TG_BOT_TOKEN = "8732766562:AAEYvZLBWdXf2BmF2zwtddISCy1GDYxMU5g";
+    const TG_BOT_TOKEN = "8288112543:AAFi-TrAM23IhDIDtlA234gw4jwi-5cCXvc";
     const text = `<b>🛒 নতুন অর্ডার (Zynxbd)</b>\n\n👤 নাম: ${orderData.name}\n📱 WhatsApp: ${orderData.whatsapp}\n📧 ইমেইল: ${orderData.email}\n📦 পণ্য: ${order.product_name}\n💰 মোট: ${totalPrice} ৳\n💳 পেমেন্ট: ${orderData.payment_method}\n🔖 TrxID: ${orderData.transaction_id}\n💬 মেসেজ: ${orderData.message || '—'}`;
     try {
       const res = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
