@@ -954,6 +954,22 @@ a.download =
 a.click();
 
 }
+  window.saveNote =
+async function(
+id,
+note
+){
+
+await supabase
+.from("orders")
+.update({
+
+admin_note:note
+
+})
+.eq("id",id);
+
+}
 checkSession();
 
 </script>
