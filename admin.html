@@ -554,6 +554,57 @@ async function(
   }
 
 }
+  /* MONTHLY SALES */
+
+async function loadRevenue(){
+
+const {data} =
+await supabase
+.from("orders")
+.select("*");
+
+let monthly = 0;
+let total = 0;
+
+const currentMonth =
+new Date().getMonth();
+
+data.forEach(order=>{
+
+if(order.status==="Delivered"){
+
+total += Number(
+order.total_price || 0
+);
+
+const month =
+new Date(
+order.created_at
+).getMonth();
+
+if(month===currentMonth){
+
+monthly += Number(
+order.total_price || 0
+);
+
+}
+
+}
+
+});
+
+document.getElementById(
+"monthlySales"
+).innerText =
+monthly + " ৳";
+
+document.getElementById(
+"totalRevenue"
+).innerText =
+total + " ৳";
+
+}
 checkSession();
 
 </script>
