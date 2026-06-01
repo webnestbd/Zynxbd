@@ -699,7 +699,59 @@ loadProducts();
 );
 
 /* DELETE PRODUCT */
+window.editProduct =
+async function(id){
 
+const {data,error} =
+await supabase
+.from("products")
+.select("*")
+.eq("id",id)
+.single();
+
+if(error) return;
+
+const newPrice =
+prompt(
+"New Price",
+data.price
+);
+
+if(newPrice===null) return;
+
+const newStock =
+prompt(
+"New Stock",
+data.stock
+);
+
+if(newStock===null) return;
+
+const {error:updateError} =
+await supabase
+.from("products")
+.update({
+
+price:Number(newPrice),
+
+stock:Number(newStock)
+
+})
+.eq("id",id);
+
+if(updateError){
+
+alert(updateError.message);
+
+return;
+
+}
+
+alert("Product Updated");
+
+loadProducts();
+
+}
 window.deleteProduct =
 async function(id){
 
