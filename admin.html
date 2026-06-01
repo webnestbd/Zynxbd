@@ -556,7 +556,153 @@ async function(
     alert(err.message);
 
   }
+  
+async function loadProducts(){
 
+const {data,error} =
+await supabase
+.from("products")
+.select("*");
+
+if(error) return;
+
+const table =
+document.getElementById(
+"productTable"
+);
+
+table.innerHTML="";
+
+data.forEach(product=>{
+
+table.innerHTML += `
+<tr class="border-b">
+
+<td>${product.name}</td>
+
+<td>${product.price}</td>
+
+<td>${product.stock}</td>
+
+<td>
+
+<button
+onclick="deleteProduct(${product.id})"
+class="bg-red-500 text-white px-2 py-1 rounded">
+
+Delete
+
+</button>
+
+</td>
+
+</tr>
+`;
+
+});
+
+}
+
+/* ADD PRODUCT */
+
+document
+.getElementById("productForm")
+.addEventListener(
+"submit",
+async(e)=>{
+
+e.preventDefault();
+
+const product = {
+
+name:
+document.getElementById(
+"pName"
+).value,
+
+description:
+document.getElementById(
+"pDescription"
+).value,
+
+price:
+Number(
+document.getElementById(
+"pPrice"
+).value
+),
+
+category:
+document.getElementById(
+"pCategory"
+).value,
+
+image_url:
+document.getElementById(
+"pImage"
+).value,
+
+stock:
+Number(
+document.getElementById(
+"pStock"
+).value
+),
+
+active:true
+
+};
+
+const {error} =
+await supabase
+.from("products")
+.insert([product]);
+
+if(error){
+
+alert(error.message);
+
+return;
+
+}
+
+alert("Product Added");
+
+e.target.reset();
+
+loadProducts();
+
+}
+);
+
+/* DELETE PRODUCT */
+
+window.deleteProduct =
+async function(id){
+
+if(
+!confirm(
+"Delete Product?"
+)
+) return;
+
+const {error} =
+await supabase
+.from("products")
+.delete()
+.eq("id",id);
+
+if(error){
+
+alert(error.message);
+
+return;
+
+}
+
+loadProducts();
+
+}
 }
   /* MONTHLY SALES */
 
