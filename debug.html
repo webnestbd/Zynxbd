@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zynxbd - Admin Debug</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-100 p-8">
+
+<div class="max-w-2xl mx-auto bg-white rounded-lg p-6 shadow-lg">
+  <h1 class="text-3xl font-bold mb-6">🔧 Zynxbd Admin Debug</h1>
+  
+  <div id="status" class="space-y-4 mb-6"></div>
+  
+  <div class="border-t pt-6">
+    <h2 class="text-xl font-bold mb-4">Login Test</h2>
+    <form id="testForm" class="space-y-3">
+      <input type="email" id="testEmail" placeholder="Email" value="admin@zynxbd.com" class="w-full border p-2 rounded">
+      <input type="password" id="testPassword" placeholder="Password" value="zynxbd@babult" class="w-full border p-2 rounded">
+      <button type="submit" class="w-full bg-pink-500 text-white p-2 rounded font-bold">Test Login</button>
+    </form>
+    <div id="loginResult" class="mt-4 p-4 bg-gray-50 rounded text-sm"></div>
+  </div>
+</div>
+
+<script>
+  const statusDiv = document.getElementById('status');
+  const loginResultDiv = document.getElementById('loginResult');
+
+  function log(msg, type = 'info') {
+    console.log(msg);
+    const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'blue';
+    statusDiv.innerHTML += `<p class="text-${color}-600"><strong>[${type.toUpperCase()}]</strong> ${msg}</p>`;
+  }
+
+  async function test() {
+    log('Starting debug...', 'info');
+
+    // Check Supabase library
+    if (!window.supabase) {
+      log('❌ Supabase library not loaded!', 'error');
+      return;
+    }
+    log('✅ Supabase library loaded', 'success');
+
+    // Create client
+    const SUPABASE_URL = "https://omotctqkemtuogpnlywo.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_6vLOupcl0H3fPfkOEdHYuw_mNCC_3IO";
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    log('✅ Supabase client created', 'success');
+
+    // Check session
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        log(`✅ User already logged in: ${session.user.email}`, 'success');
+      } else {
+        log('⚠️ No active session', 'info');
+      }
+    } catch (err) {
+      log(`❌ Session check error: ${err.message}`, 'error');
+    }
+
+    // Test login
+    document.getElementById('testForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginResultDiv.innerHTML = '<p>Testing login...</p>';
+
+      const email = document.getElementById('testEmail').value;
+      const password = document.getElementById('testPassword').value;
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (error) {
+          loginResultDiv.innerHTML = `<p class="text-red-600"><strong>❌ Login Error:</strong><br>${error.message}</p>`;
+          log(`Login failed: ${error.message}`, 'error');
+        } else {
+          loginResultDiv.innerHTML = `<p class="text-green-600"><strong>✅ Login Success!</strong><br>User: ${data.user.email}<br><a href="admin.html" class="text-blue-500 underline">Go to Admin Panel →</a></p>`;
+          log(`✅ Login successful: ${data.user.email}`, 'success');
+        }
+      } catch (err) {
+        loginResultDiv.innerHTML = `<p class="text-red-600"><strong>❌ Exception:</strong><br>${err.message}</p>`;
+        log(`Exception: ${err.message}`, 'error');
+      }
+    });
+  }
+
+  // Run tests
+  test();
+</script>
+
+</body>
+</html>
