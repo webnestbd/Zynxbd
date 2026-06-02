@@ -1,0 +1,4 @@
+cd Zynxbd
+git add .
+git commit -m "Admin panel complete with SQL setup"
+git push
