@@ -86,8 +86,7 @@
 </section>
 
 <footer class="bg-gray-800 text-white py-6 text-center text-sm">
-  <p>© ২০২৬ Zynxbd | Designed & Developed by WebNest BD</p>
-  <p class="mt-2"><a href="admin.html" class="text-pink-400 hover:text-pink-300 underline">Admin Panel</a></p>
+  © ২০২৬ Zynxbd | Designed & Developed by WebNest BD
 </footer>
 
 <!-- Cart Modal -->
@@ -116,7 +115,6 @@
       <input type="text" name="name" placeholder="আপনার নাম" required class="w-full border rounded-xl p-2">
       <input type="tel" name="whatsapp" placeholder="WhatsApp নাম্বার" required class="w-full border rounded-xl p-2">
       <input type="email" name="email" placeholder="ইমেইল" required class="w-full border rounded-xl p-2">
-      <input type="text" name="address" placeholder="ঠিকানা" required class="w-full border rounded-xl p-2">
       <div class="grid grid-cols-2 gap-2">
         <select id="paymentMethod" name="payment_method" required class="border rounded-xl p-2">
           <option value="">মেথড সিলেক্ট</option>
@@ -136,12 +134,10 @@
 
 <div id="toastMsg" class="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
   // ---------- DEMO PRODUCTS (if Supabase fails, these will show) ----------
   const demoProducts = [
-    { id: 1, name: "Canva Pro", description: "প্রিমিয়াম ডিজাইন অ্যাক্সেস, ১ বছর", price: 299, category: "subscription", image_url: "https://i.postimg.cc/9z3XFmSb/20260531-232841-0000.jpg" },
+    { id: 1, name: "Canva Pro", description: "প্রিমিয়াম ডিজাইন অ্যাক্সেস, ১ বছর", price: 299, category: "subscription", image_url: "https://i.postimg.cc/9z3XFmSb/20260531-232841-0000.jpg" },
     { id: 2, name: "CapCut Pro", description: "ভিডিও এডিটিং প্রো টুলস", price: 249, category: "subscription", image_url: "https://i.postimg.cc/tgYLgk46/20260531-211351-0000.jpg" },
     { id: 3, name: "Adobe Creative Cloud", description: "সব Adobe অ্যাপস", price: 999, category: "subscription", image_url: "https://i.postimg.cc/HL7gjDwn/AI-Thumbnail-Creation-20260531-233929-0000.jpg" },
     { id: 4, name: "YouTube Premium", description: "বিজ্ঞাপন মুক্ত ভিডিও", price: 199, category: "subscription", image_url: "https://i.postimg.cc/wxkd1kmZ/AI-Thumbnail-Creation-20260531-234011-0000.jpg" },
@@ -154,87 +150,87 @@
   let currentCategory = 'all';
   let searchTerm = '';
 
+  // DOM elements
   const loader = document.getElementById('loader');
   const productsGrid = document.getElementById('productsGrid');
   const categoryTabs = document.getElementById('categoryTabs');
+  const searchInput = document.getElementById('searchInput');
+  const searchBtn = document.getElementById('searchBtn');
   const cartBtn = document.getElementById('cartBtn');
-  const cartCount = document.getElementById('cartCount');
   const cartModal = document.getElementById('cartModal');
   const closeCartBtn = document.getElementById('closeCartBtn');
   const checkoutBtn = document.getElementById('checkoutBtn');
   const checkoutModal = document.getElementById('checkoutModal');
   const closeCheckoutBtn = document.getElementById('closeCheckoutBtn');
-  const searchInput = document.getElementById('searchInput');
-  const searchBtn = document.getElementById('searchBtn');
+  const cartCountSpan = document.getElementById('cartCount');
+  const cartItemsDiv = document.getElementById('cartItems');
+  const cartTotalSpan = document.getElementById('cartTotal');
   const paymentMethodSelect = document.getElementById('paymentMethod');
   const paymentInstructionDiv = document.getElementById('paymentInstruction');
+  const toastMsg = document.getElementById('toastMsg');
 
   function showToast(msg) {
-    const t = document.getElementById('toastMsg');
-    t.innerText = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
+    toastMsg.innerText = msg;
+    toastMsg.classList.add('show');
+    setTimeout(() => toastMsg.classList.remove('show'), 2500);
   }
 
   function updateCartUI() {
-    cartCount.innerText = cart.length;
+    const totalQty = cart.reduce((sum, i) => sum + i.quantity, 0);
+    cartCountSpan.innerText = totalQty;
     localStorage.setItem('zynxCart', JSON.stringify(cart));
-  }
-
-  function renderCartItems() {
-    const cartItemsDiv = document.getElementById('cartItems');
-    cartItemsDiv.innerHTML = cart.map((item, idx) => `
-      <div class="flex justify-between items-center border-b pb-2">
-        <div>
-          <p class="font-semibold">${item.name}</p>
-          <p class="text-sm text-gray-600">${item.price} ৳ × ${item.quantity}</p>
-        </div>
-        <button onclick="removeFromCart(${idx})" class="text-red-500 text-sm">সরান</button>
-      </div>
-    `).join('');
-
-    const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    document.getElementById('cartTotal').innerText = total + ' টাকা';
-  }
-
-  window.addToCart = function(product) {
-    const existing = cart.find(p => p.id === product.id);
-    if (existing) {
-      existing.quantity++;
-    } else {
-      cart.push({ ...product, quantity: 1 });
-    }
-    updateCartUI();
-    showToast(`${product.name} কার্টে যোগ হয়েছে`);
-  }
-
-  window.removeFromCart = function(idx) {
-    cart.splice(idx, 1);
-    updateCartUI();
     renderCartItems();
   }
 
+  function renderCartItems() {
+    if (!cartItemsDiv) return;
+    if (cart.length === 0) {
+      cartItemsDiv.innerHTML = '<p class="text-center text-gray-500">কার্ট খালি</p>';
+      cartTotalSpan.innerText = '০ টাকা';
+      return;
+    }
+    let total = 0;
+    cartItemsDiv.innerHTML = cart.map(item => {
+      total += item.price * item.quantity;
+      return `<div class="flex justify-between items-center border-b pb-2">
+        <div><span class="font-semibold">${escapeHtml(item.name)}</span> x ${item.quantity}</div>
+        <div class="flex items-center gap-2">
+          <span>${item.price * item.quantity} ৳</span>
+          <button onclick="removeFromCart('${item.id}')" class="text-red-500"><i class="fas fa-trash-alt"></i></button>
+        </div>
+      </div>`;
+    }).join('');
+    cartTotalSpan.innerText = total + ' ৳';
+  }
+
+  function addToCart(product) {
+    const existing = cart.find(p => p.id == product.id);
+    if (existing) existing.quantity++;
+    else cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1 });
+    updateCartUI();
+    showToast(`${product.name} কার্টে যোগ হয়েছে`);
+  }
+
+  window.addToCart = addToCart;
+  window.removeFromCart = function(id) {
+    cart = cart.filter(p => p.id != id);
+    updateCartUI();
+    if (cart.length === 0) renderCartItems();
+    showToast('পণ্য কার্ট থেকে সরানো হয়েছে');
+  };
+
   function filterAndRenderProducts() {
     let filtered = products;
-
-    if (currentCategory !== 'all') {
-      filtered = filtered.filter(p => p.category === currentCategory);
-    }
-
-    if (searchTerm) {
-      filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(searchTerm) ||
-        p.description.toLowerCase().includes(searchTerm)
-      );
-    }
-
+    if (currentCategory !== 'all') filtered = filtered.filter(p => p.category === currentCategory);
+    if (searchTerm) filtered = filtered.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || (p.description && p.description.toLowerCase().includes(searchTerm.toLowerCase())));
+    if (filtered.length === 0) { productsGrid.innerHTML = '<div class="col-span-full text-center py-10">কোন প্রোডাক্ট পাওয়া যায়নি</div>'; return; }
     productsGrid.innerHTML = filtered.map(p => `
-      <div class="rounded-2xl overflow-hidden bg-gray-50 hover:shadow-lg transition">
-        <img src="${p.image_url}" alt="${p.name}" class="w-full h-48 object-cover">
-        <div class="p-4">
-          <h3 class="font-bold text-sm line-clamp-2">${p.name}</h3>
-          <p class="text-xs text-gray-600 mt-1 line-clamp-2">${p.description || ''}</p>
-          <div class="flex justify-between items-center mt-3">
+      <div class="border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition bg-white">
+        <div class="h-40 bg-gray-100 flex items-center justify-center">${p.image_url ? `<img src="${p.image_url}" class="h-full w-full object-cover">` : `<i class="fas fa-image text-4xl text-gray-400"></i>`}</div>
+        <div class="p-3">
+          <h3 class="font-bold">${escapeHtml(p.name)}</h3>
+          <p class="text-sm text-gray-500 line-clamp-2">${escapeHtml(p.description?.slice(0,60) || '')}</p>
+          <div class="flex justify-between items-center mt-2">
             <span class="text-pink-500 font-bold">৳${p.price}</span>
             <button onclick='addToCart(${JSON.stringify(p)})' class="bg-pink-500 text-white px-3 py-1 rounded-full text-sm"><i class="fas fa-cart-plus"></i> কিনুন</button>
           </div>
@@ -250,7 +246,7 @@
       btn.addEventListener('click', () => {
         currentCategory = btn.dataset.cat;
         filterAndRenderProducts();
-        renderCategories();
+        renderCategories(); // re-render to update active style
       });
     });
   }
@@ -273,69 +269,48 @@
     else paymentInstructionDiv.classList.add('hidden');
   });
 
-  // Order submission (Supabase + Telegram)
+  // Order submission (Telegram + localStorage)
   async function submitOrder(orderData) {
     const totalPrice = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    const productNames = cart.map(i => `${i.name} x${i.quantity}`).join(', ');
-    
     const order = {
       customer_name: orderData.name,
-      phone: orderData.whatsapp,
+      whatsapp_number: orderData.whatsapp,
       email: orderData.email,
-      address: orderData.address,
-      product_name: productNames,
+      product_name: cart.map(i => `${i.name} x${i.quantity}`).join(', '),
       total_price: totalPrice,
       payment_method: orderData.payment_method,
-      trx_id: orderData.transaction_id,
-      status: "Pending",
-      quantity: cart.length,
+      transaction_id: orderData.transaction_id,
+      additional_message: orderData.message,
       created_at: new Date().toISOString()
     };
-
-    // Send to Supabase
-    try {
-      const SUPABASE_URL = "https://omotctqkemtuogpnlywo.supabase.co";
-      const SUPABASE_ANON = "sb_publishable_6vLOupcl0H3fPfkOEdHYuw_mNCC_3IO";
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-      
-      const { error } = await supabase.from('orders').insert([order]);
-      if (error) throw error;
-
-    } catch (e) {
-      console.warn("Supabase insert error", e);
-    }
-
-    // Send to Telegram
+    // Send to Telegram (using your bot token)
     const TG_BOT_TOKEN = "8288112543:AAFi-TrAM23IhDIDtlA234gw4jwi-5cCXvc";
-    const text = `<b>🛒 নতুন অর্ডার (Zynxbd)</b>\n\n👤 নাম: ${orderData.name}\n📱 WhatsApp: ${orderData.whatsapp}\n📧 ইমেইল: ${orderData.email}\n📍 ঠিকানা: ${orderData.address}\n📦 পণ্য: ${productNames}\n💰 মোট: ${totalPrice} ৳\n💳 পেমেন্ট: ${orderData.payment_method}\n🔖 TrxID: ${orderData.transaction_id}\n💬 মেসেজ: ${orderData.message || '—'}`;
+    const text = `<b>🛒 নতুন অর্ডার (Zynxbd)</b>\n\n👤 নাম: ${orderData.name}\n📱 WhatsApp: ${orderData.whatsapp}\n📧 ইমেইল: ${orderData.email}\n📦 পণ্য: ${order.product_name}\n💰 মোট: ${totalPrice} ৳\n💳 পেমেন্ট: ${orderData.payment_method}\n🔖 TrxID: ${orderData.transaction_id}\n💬 মেসেজ: ${orderData.message || '—'}`;
     try {
       const res = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
-        method: 'POST', 
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ chat_id: '5948968989', text, parse_mode: 'HTML' })
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ chat_id: 'YOUR_CHAT_ID', text, parse_mode: 'HTML' })
       });
+      // If chat_id not set, it will fail but we still save order locally
       console.log(await res.json());
-    } catch(e) { 
-      console.warn("Telegram error", e); 
-    }
+    } catch(e) { console.warn("Telegram error", e); }
+    // Save to localStorage for demo
+    const orders = JSON.parse(localStorage.getItem('zynxOrders') || '[]');
+    orders.push(order);
+    localStorage.setItem('zynxOrders', JSON.stringify(orders));
   }
 
-  // Load products
+  // Load products (first try Supabase, fallback to demo)
   async function loadProducts() {
     loader.classList.remove('hidden');
     try {
       const SUPABASE_URL = "https://omotctqkemtuogpnlywo.supabase.co";
       const SUPABASE_ANON = "sb_publishable_6vLOupcl0H3fPfkOEdHYuw_mNCC_3IO";
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-      
-      const { data, error } = await supabase.from('products').select('*');
-      
+      const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON);
+      const { data, error } = await supabase.from('Products').select('*');
       if (error) throw error;
-      if (data && data.length) {
-        products = data;
-      } else {
-        products = demoProducts;
-      }
+      if (data && data.length) products = data;
+      else products = demoProducts;
     } catch(e) {
       console.warn("Supabase error, using demo products", e);
       products = demoProducts;
@@ -352,6 +327,7 @@
     if (cart.length === 0) { showToast('কার্ট খালি'); return; }
     cartModal.classList.add('hidden');
     checkoutModal.classList.remove('hidden');
+    // Update instruction if payment method already selected
     if (paymentMethodSelect.value) showPaymentInstruction(paymentMethodSelect.value);
   });
   closeCheckoutBtn?.addEventListener('click', () => checkoutModal.classList.add('hidden'));
@@ -365,7 +341,6 @@
       name: formData.get('name'),
       whatsapp: formData.get('whatsapp'),
       email: formData.get('email'),
-      address: formData.get('address'),
       payment_method: formData.get('payment_method'),
       transaction_id: formData.get('transaction_id'),
       message: formData.get('message')
@@ -373,8 +348,7 @@
     if (!orderData.payment_method || !orderData.transaction_id) { showToast('পেমেন্ট মেথড ও Trx ID দিন'); return; }
     if (cart.length === 0) { showToast('কার্ট খালি'); return; }
     const btn = e.target.querySelector('button[type="submit"]');
-    btn.disabled = true; 
-    btn.innerText = 'প্রক্রিয়াকরণ...';
+    btn.disabled = true; btn.innerText = 'প্রক্রিয়াকরণ...';
     try {
       await submitOrder(orderData);
       cart = [];
@@ -383,13 +357,8 @@
       showToast('অর্ডার সফল! আমরা শীঘ্রই যোগাযোগ করব।');
       e.target.reset();
       paymentInstructionDiv.classList.add('hidden');
-    } catch (err) { 
-      showToast('অর্ডার জমা দিতে সমস্যা: '+err.message); 
-    }
-    finally { 
-      btn.disabled = false; 
-      btn.innerText = 'অর্ডার কনফার্ম করুন'; 
-    }
+    } catch (err) { showToast('অর্ডার জমা দিতে সমস্যা: '+err.message); }
+    finally { btn.disabled = false; btn.innerText = 'অর্ডার কনফার্ম করুন'; }
   });
 
   // Mobile menu toggle
@@ -403,10 +372,11 @@
     if (e.target === checkoutModal) checkoutModal.classList.add('hidden');
   });
 
-  // Initialize
-  loadProducts();
-  updateCartUI();
-</script>
+  function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
 
+  // Supabase client from CDN
+  const supabaseJs = window.supabase;
+  loadProducts();
+</script>
 </body>
 </html>
