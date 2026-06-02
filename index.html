@@ -2,147 +2,312 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Zynxbd - অনলাইন শপ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+        .loading { display: inline-block; width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid #ec4899; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .product-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .product-card:active { transform: scale(0.98); }
+    </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-50">
 
-<div class="max-w-6xl mx-auto p-5">
-    <h1 class="text-3xl font-bold text-center my-5">Zynxbd <span class="text-pink-500">Shop</span></h1>
-    
-    <!-- Products Grid -->
-    <div id="products" class="grid grid-cols-1 md:grid-cols-3 gap-5"></div>
-    
-    <!-- Admin Button -->
-    <div class="text-center my-5">
-        <button onclick="showLogin()" class="bg-pink-500 text-white px-6 py-2 rounded-lg">অ্যাডমিন লগইন</button>
-    </div>
-</div>
-
-<!-- Login Modal -->
-<div id="loginModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center">
-    <div class="bg-white p-6 rounded-lg w-96">
-        <h3 class="text-xl font-bold mb-4">অ্যাডমিন লগইন</h3>
-        <input type="email" id="email" placeholder="ইমেইল" class="w-full border p-2 rounded mb-3">
-        <input type="password" id="password" placeholder="পাসওয়ার্ড" class="w-full border p-2 rounded mb-3">
-        <button onclick="login()" class="bg-pink-500 w-full py-2 rounded text-white">লগইন</button>
-        <button onclick="closeLogin()" class="bg-gray-500 w-full py-2 rounded mt-2 text-white">বন্ধ</button>
-    </div>
-</div>
-
-<!-- Admin Panel -->
-<div id="adminPanel" class="hidden fixed inset-0 bg-black/95 overflow-y-auto p-5">
-    <div class="max-w-4xl mx-auto bg-white rounded-lg p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold">অ্যাডমিন প্যানেল</h2>
-            <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded">লগআউট</button>
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-white shadow-md">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-2xl md:text-3xl font-bold">Zynx<span class="text-pink-500">bd</span></h1>
+            <button onclick="showAdminLogin()" class="bg-gray-100 hover:bg-pink-500 hover:text-white text-gray-700 px-4 py-2 rounded-full transition flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span>অ্যাডমিন</span>
+            </button>
         </div>
-        
-        <div class="border p-4 rounded mb-4">
-            <h3 class="font-bold mb-2">নতুন পণ্য যোগ করুন</h3>
-            <input type="text" id="prodName" placeholder="পণ্যের নাম" class="border p-2 rounded w-full mb-2">
-            <input type="number" id="prodPrice" placeholder="দাম" class="border p-2 rounded w-full mb-2">
-            <textarea id="prodDesc" placeholder="বিবরণ" class="border p-2 rounded w-full mb-2"></textarea>
-            <button onclick="addProduct()" class="bg-green-500 text-white px-4 py-2 rounded">যোগ করুন</button>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-r from-pink-500 via-pink-400 to-purple-500 text-white py-16 md:py-20 text-center">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl md:text-5xl font-bold mb-3">সেরা পণ্য, সেরা দাম</h2>
+            <p class="text-base md:text-xl mb-6 opacity-90">আপনার পছন্দের সব কিছু এক জায়গায় পাবেন</p>
+            <button onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})" class="bg-white text-pink-500 px-6 md:px-8 py-2 md:py-3 rounded-full font-bold hover:bg-gray-100 transition">শপিং শুরু করুন</button>
         </div>
-        
-        <div>
-            <h3 class="font-bold mb-2">পণ্যের তালিকা</h3>
-            <div id="adminProducts"></div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products" class="max-w-6xl mx-auto px-4 py-12 md:py-16">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl md:text-4xl font-bold">আমাদের <span class="text-pink-500">প্রোডাক্ট</span></h2>
         </div>
-    </div>
-</div>
+        <div id="loader" class="flex justify-center py-8">
+            <div class="loading"></div>
+        </div>
+        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"></div>
+        <div id="noProducts" class="text-center py-12 hidden">
+            <p class="text-xl text-gray-500">কোনো পণ্য পাওয়া যায়নি</p>
+            <p class="text-gray-400 mt-2">অ্যাডমিন প্যানেলে লগইন করে পণ্য যোগ করুন</p>
+        </div>
+    </section>
 
-<script>
-    // ==================== আপনার সঠিক তথ্য ====================
-    const SUPABASE_URL = "https://jxtxnotpaohhliziscir.supabase.co";
-    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4dHhub3RwYW9oaGxpemlzY2lyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzODc2MjYsImV4cCI6MjA5NTk2MzYyNn0.trYVnmDV7fKRgwqwz5UCC52YK2pKbVuG8T5BtbeFhFk";
-    // ========================================================
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white text-center py-6 mt-8">
+        <p>© ২০২৬ Zynxbd - আপনার বিশ্বস্ত অনলাইন শপ</p>
+    </footer>
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-    let currentUser = null;
-
-    async function loadProducts() {
-        const { data, error } = await supabase.from('products').select('*');
-        if (error) {
-            document.getElementById('products').innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`;
-        } else if (!data || data.length === 0) {
-            document.getElementById('products').innerHTML = '<p class="text-gray-500">কোন পণ্য নেই</p>';
-        } else {
-            document.getElementById('products').innerHTML = data.map(p => `
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h3 class="font-bold text-lg">${p.name}</h3>
-                    <p class="text-pink-500 text-xl font-bold">${p.price} ৳</p>
-                    <p class="text-gray-600">${p.description || ''}</p>
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onclick="if(event.target===this) closeAdminLogin()">
+        <div class="bg-white rounded-xl max-w-md w-full p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold">অ্যাডমিন লগইন</h3>
+                <button onclick="closeAdminLogin()" class="text-2xl text-gray-500">&times;</button>
+            </div>
+            <form id="adminLoginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">ইমেইল</label>
+                    <input type="email" id="adminEmail" value="admin@zynxbd.com" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:border-pink-500 outline-none">
                 </div>
-            `).join('');
-        }
-    }
-
-    async function login() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-            alert('লগইন ব্যর্থ: ' + error.message);
-        } else {
-            currentUser = data.user;
-            document.getElementById('loginModal').classList.add('hidden');
-            document.getElementById('adminPanel').classList.remove('hidden');
-            loadAdminProducts();
-        }
-    }
-
-    async function loadAdminProducts() {
-        const { data } = await supabase.from('products').select('*');
-        if (data && data.length > 0) {
-            document.getElementById('adminProducts').innerHTML = data.map(p => `
-                <div class="flex justify-between items-center border-b p-2">
-                    <span>${p.name} - ${p.price}৳</span>
-                    <button onclick="deleteProduct(${p.id})" class="bg-red-500 text-white px-3 py-1 rounded">ডিলিট</button>
+                <div>
+                    <label class="block text-sm font-medium mb-1">পাসওয়ার্ড</label>
+                    <input type="password" id="adminPassword" value="zynxbd@babult" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:border-pink-500 outline-none">
                 </div>
-            `).join('');
-        } else {
-            document.getElementById('adminProducts').innerHTML = '<p>কোন পণ্য নেই</p>';
+                <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-lg font-bold transition">লগইন করুন</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="hidden fixed inset-0 bg-gray-900/95 z-50 overflow-y-auto">
+        <div class="max-w-4xl mx-auto p-4 md:p-6">
+            <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+                <h2 class="text-2xl md:text-3xl font-bold text-white">অ্যাডমিন ড্যাশবোর্ড</h2>
+                <div class="flex gap-3">
+                    <button onclick="toggleAddProductForm()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition">+ নতুন পণ্য</button>
+                    <button onclick="logoutAdmin()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition">লগআউট</button>
+                </div>
+            </div>
+            
+            <div id="addProductForm" class="hidden bg-white rounded-xl p-6 mb-6">
+                <h3 class="text-xl font-bold mb-4">নতুন পণ্য যুক্ত করুন</h3>
+                <div class="grid grid-cols-1 gap-4">
+                    <input type="text" id="prodName" placeholder="পণ্যের নাম *" class="border-2 rounded-lg p-2 focus:border-pink-500 outline-none">
+                    <input type="number" id="prodPrice" placeholder="দাম *" class="border-2 rounded-lg p-2 focus:border-pink-500 outline-none">
+                    <input type="text" id="prodImage" placeholder="ছবির URL (আপশনাল)" class="border-2 rounded-lg p-2 focus:border-pink-500 outline-none">
+                    <textarea id="prodDesc" placeholder="বিবরণ" rows="2" class="border-2 rounded-lg p-2 focus:border-pink-500 outline-none"></textarea>
+                </div>
+                <button onclick="addProduct()" class="mt-4 bg-pink-500 hover:bg-pink-600 text-white px-6 py-2 rounded-lg transition">পণ্য সংরক্ষণ করুন</button>
+            </div>
+            
+            <div class="bg-white rounded-xl p-6">
+                <h3 class="text-xl font-bold mb-4">পণ্যের তালিকা</h3>
+                <div id="adminProductsList" class="space-y-3 max-h-96 overflow-y-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Message -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-5 py-3 rounded-full shadow-lg z-[100] transition-all duration-300 translate-y-16 opacity-0 text-sm"></div>
+
+    <script>
+        // ==================== SUPABASE CONFIGURATION (সঠিক) ====================
+        const SUPABASE_URL = "https://jxtxnotpaohhliziscir.supabase.co";
+        const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4dHhub3RwYW9oaGxpemlzY2lyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzODc2MjYsImV4cCI6MjA5NTk2MzYyNn0.trYVnmDV7fKRgwqwz5UCC52YK2pKbVuG8T5BtbeFhFk";
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+        console.log("✅ Supabase initialized");
+
+        // ==================== GLOBAL VARIABLES ====================
+        let allProducts = [];
+        let currentAdmin = null;
+
+        // ==================== LOAD PRODUCTS ====================
+        async function loadProducts() {
+            const loader = document.getElementById('loader');
+            const grid = document.getElementById('productsGrid');
+            const noProd = document.getElementById('noProducts');
+            
+            if (loader) loader.classList.remove('hidden');
+            if (grid) grid.innerHTML = '';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('id', { ascending: false });
+                
+                if (error) throw error;
+                
+                if (data && data.length > 0) {
+                    allProducts = data;
+                    if (noProd) noProd.classList.add('hidden');
+                    if (grid) {
+                        grid.innerHTML = data.map(p => `
+                            <div class="product-card bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all">
+                                <img src="${p.image_url || 'https://placehold.co/400x300?text=Product'}" alt="${p.name}" class="w-full h-48 object-cover bg-gray-100">
+                                <div class="p-4">
+                                    <h3 class="font-bold text-lg line-clamp-1">${escapeHtml(p.name)}</h3>
+                                    <p class="text-pink-600 text-xl font-bold mt-1">${p.price.toLocaleString()} ৳</p>
+                                    <p class="text-gray-500 text-sm mt-1 line-clamp-2">${escapeHtml(p.description || '')}</p>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                } else {
+                    allProducts = [];
+                    if (noProd) noProd.classList.remove('hidden');
+                    if (grid) grid.innerHTML = '';
+                }
+            } catch(e) {
+                console.error("Load error:", e);
+                showToast('❌ পণ্য লোড করতে ব্যর্থ');
+                if (noProd) noProd.classList.remove('hidden');
+            } finally {
+                if (loader) loader.classList.add('hidden');
+            }
         }
-    }
 
-    async function addProduct() {
-        const name = document.getElementById('prodName').value;
-        const price = parseInt(document.getElementById('prodPrice').value);
-        const description = document.getElementById('prodDesc').value;
-        if (!name || !price) { alert('নাম এবং দাম দিন'); return; }
-        const { error } = await supabase.from('products').insert([{ name, price, description }]);
-        if (error) { alert('Error: ' + error.message); } 
-        else {
-            alert('পণ্য যোগ সফল!');
-            document.getElementById('prodName').value = '';
-            document.getElementById('prodPrice').value = '';
-            document.getElementById('prodDesc').value = '';
-            loadProducts();
-            loadAdminProducts();
+        // ==================== ADMIN LOGIN ====================
+        function showAdminLogin() {
+            document.getElementById('adminLoginModal').classList.remove('hidden');
         }
-    }
+        
+        function closeAdminLogin() {
+            document.getElementById('adminLoginModal').classList.add('hidden');
+        }
+        
+        document.getElementById('adminLoginForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            showToast('⏳ লগইন হচ্ছে...');
+            
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                
+                if (data.user) {
+                    currentAdmin = data.user;
+                    showToast('✅ অ্যাডমিন লগইন সফল!');
+                    closeAdminLogin();
+                    document.getElementById('adminDashboard').classList.remove('hidden');
+                    loadAdminProducts();
+                }
+            } catch(e) {
+                showToast('❌ লগইন ব্যর্থ: ' + e.message);
+            }
+        });
+        
+        function logoutAdmin() {
+            supabase.auth.signOut();
+            currentAdmin = null;
+            document.getElementById('adminDashboard').classList.add('hidden');
+            showToast('✅ লগআউট সফল');
+        }
+        
+        function toggleAddProductForm() {
+            const form = document.getElementById('addProductForm');
+            if (form) form.classList.toggle('hidden');
+        }
+        
+        async function addProduct() {
+            const name = document.getElementById('prodName').value.trim();
+            const price = parseFloat(document.getElementById('prodPrice').value);
+            const image_url = document.getElementById('prodImage').value.trim() || null;
+            const description = document.getElementById('prodDesc').value.trim() || null;
+            
+            if (!name || !price || isNaN(price)) {
+                showToast('❌ নাম এবং সঠিক দাম দিন');
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .insert([{ name, price, image_url, description }]);
+                
+                if (error) throw error;
+                
+                showToast('✅ পণ্য যোগ সফল!');
+                document.getElementById('prodName').value = '';
+                document.getElementById('prodPrice').value = '';
+                document.getElementById('prodImage').value = '';
+                document.getElementById('prodDesc').value = '';
+                document.getElementById('addProductForm').classList.add('hidden');
+                loadProducts();
+                loadAdminProducts();
+            } catch(e) {
+                showToast('❌ পণ্য যোগ ব্যর্থ: ' + e.message);
+            }
+        }
+        
+        async function loadAdminProducts() {
+            const container = document.getElementById('adminProductsList');
+            if (!container) return;
+            
+            try {
+                const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                
+                if (data && data.length > 0) {
+                    container.innerHTML = data.map(p => `
+                        <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                            <div class="flex-1">
+                                <p class="font-bold">${escapeHtml(p.name)}</p>
+                                <p class="text-sm text-gray-600">${p.price.toLocaleString()} ৳</p>
+                            </div>
+                            <button onclick="deleteProduct(${p.id})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition">ডিলিট</button>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-4">কোনো পণ্য নেই</p>';
+                }
+            } catch(e) {
+                console.error(e);
+                container.innerHTML = '<p class="text-red-500">লোড করতে ব্যর্থ</p>';
+            }
+        }
+        
+        async function deleteProduct(id) {
+            if (!confirm('পণ্য ডিলিট করবেন?')) return;
+            try {
+                const { error } = await supabase.from('products').delete().eq('id', id);
+                if (error) throw error;
+                showToast('✅ পণ্য ডিলিট সফল');
+                loadProducts();
+                loadAdminProducts();
+            } catch(e) {
+                showToast('❌ ডিলিট ব্যর্থ: ' + e.message);
+            }
+        }
 
-    async function deleteProduct(id) {
-        if (!confirm('ডিলিট করবেন?')) return;
-        await supabase.from('products').delete().eq('id', id);
+        // ==================== HELPER FUNCTIONS ====================
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.innerText = msg;
+                toast.classList.remove('translate-y-16', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-16', 'opacity-0');
+                    toast.classList.remove('translate-y-0', 'opacity-100');
+                }, 3000);
+            }
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // ==================== INITIALIZE ====================
         loadProducts();
-        loadAdminProducts();
-    }
-
-    function showLogin() { document.getElementById('loginModal').classList.remove('hidden'); }
-    function closeLogin() { document.getElementById('loginModal').classList.add('hidden'); }
-    function logout() {
-        currentUser = null;
-        document.getElementById('adminPanel').classList.add('hidden');
-        loadProducts();
-    }
-
-    loadProducts();
-</script>
-
+    </script>
 </body>
 </html>
