@@ -20,6 +20,10 @@
   <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
     <h1 class="text-3xl font-bold">Zynx<span class="text-pink-500">bd</span></h1>
     <div class="flex items-center gap-6">
+      <!-- Admin Link -->
+      <a href="#" onclick="showAdminLogin()" class="text-gray-600 hover:text-pink-500">
+        <i class="fas fa-user-shield"></i> অ্যাডমিন
+      </a>
       <button id="cartBtn" class="relative text-2xl text-gray-700 hover:text-pink-500 transition">
         <i class="fas fa-shopping-cart"></i>
         <span id="cartCount" class="absolute -top-3 -right-3 bg-pink-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">0</span>
@@ -159,14 +163,75 @@
   </div>
 </div>
 
+<!-- Admin Login Modal -->
+<div id="adminLoginModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl max-w-md w-full p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-2xl font-bold">অ্যাডমিন লগইন</h3>
+      <button onclick="closeAdminLogin()" class="text-2xl text-gray-500">&times;</button>
+    </div>
+    
+    <form id="adminLoginForm" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">ইমেইল</label>
+        <input type="email" id="adminEmail" value="admin@zynxbd.com" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:border-pink-500 outline-none">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium mb-1">পাসওয়ার্ড</label>
+        <input type="password" id="adminPassword" value="zynxbd@babult" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:border-pink-500 outline-none">
+      </div>
+      
+      <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-lg font-bold transition">লগইন করুন</button>
+    </form>
+  </div>
+</div>
+
+<!-- Admin Dashboard (Hidden by default) -->
+<div id="adminDashboard" class="hidden fixed inset-0 bg-gray-900/95 z-50 overflow-y-auto">
+  <div class="max-w-6xl mx-auto p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-3xl font-bold text-white">অ্যাডমিন ড্যাশবোর্ড</h2>
+      <div class="flex gap-3">
+        <button onclick="showAddProductForm()" class="bg-green-500 text-white px-4 py-2 rounded-lg">+ নতুন পণ্য</button>
+        <button onclick="logoutAdmin()" class="bg-red-500 text-white px-4 py-2 rounded-lg">লগআউট</button>
+      </div>
+    </div>
+    
+    <!-- Add Product Form -->
+    <div id="addProductForm" class="hidden bg-white rounded-xl p-6 mb-6">
+      <h3 class="text-xl font-bold mb-4">নতুন পণ্য যুক্ত করুন</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="text" id="prodName" placeholder="পণ্যের নাম" class="border-2 rounded-lg p-2">
+        <input type="text" id="prodPrice" placeholder="দাম" class="border-2 rounded-lg p-2">
+        <input type="text" id="prodImage" placeholder="ছবির URL (আপশনাল)" class="border-2 rounded-lg p-2">
+        <textarea id="prodDesc" placeholder="বিবরণ" rows="2" class="border-2 rounded-lg p-2"></textarea>
+      </div>
+      <button onclick="addProduct()" class="mt-4 bg-pink-500 text-white px-6 py-2 rounded-lg">পণ্য সংরক্ষণ করুন</button>
+    </div>
+    
+    <!-- Products List -->
+    <div class="bg-white rounded-xl p-6">
+      <h3 class="text-xl font-bold mb-4">পণ্যের তালিকা</h3>
+      <div id="adminProductsList" class="space-y-3"></div>
+    </div>
+  </div>
+</div>
+
 <div id="toast" class="toast"></div>
 
 <script>
   // =============== SUPABASE SETUP ===============
+  // সঠিক Supabase URL এবং Anon Key ব্যবহার করুন
   const SUPABASE_URL = "https://omotctqkemtuogpnlywo.supabase.co";
-  const SUPABASE_ANON = "sb_publishable_6vLOupcl0H3fPfkOEdHYuw_mNCC_3IO";
+  const SUPABASE_ANON = "sb_publishable_6vLOupcl0H3fPfkOEdHYuw_mNCC_3IOzMjQ3Nn0.YOUR_ACTUAL_ANON_KEY";
+  
+  // ⚠️ গুরুত্বপূর্ণ: উপরের Anon Key সঠিকটি দিন!
+  // আপনার Supabase Dashboard → Project Settings → API → Project API keys → anon public
   
   let supabase;
+  let currentAdmin = null;
+  
   try {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
     console.log("✅ Supabase initialized");
@@ -177,20 +242,11 @@
   // =============== STATE ===============
   let allProducts = [];
   let cart = JSON.parse(localStorage.getItem('zynxCart')) || [];
-  let currentSearch = '';
-
-  // =============== DEMO DATA ===============
-  const demoProducts = [
-    { id: 1, name: "স্মার্টফোন", description: "অত্যাধুনিক স্মার্টফোন", price: 25000, image_url: "https://via.placeholder.com/300x300?text=Smartphone" },
-    { id: 2, name: "ল্যাপটপ", description: "শক্তিশালী ল্যাপটপ", price: 75000, image_url: "https://via.placeholder.com/300x300?text=Laptop" },
-    { id: 3, name: "হেডফোন", description: "উচ্চমানের অডিও", price: 5000, image_url: "https://via.placeholder.com/300x300?text=Headphone" },
-    { id: 4, name: "ক্যামেরা", description: "পেশাদার ক্যামেরা", price: 45000, image_url: "https://via.placeholder.com/300x300?text=Camera" }
-  ];
 
   // =============== LOAD PRODUCTS ===============
   async function loadProducts() {
     const loader = document.getElementById('loader');
-    loader.classList.remove('hidden');
+    if (loader) loader.classList.remove('hidden');
     
     try {
       if (!supabase) throw new Error("Supabase not initialized");
@@ -198,24 +254,35 @@
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('active', true)
-        .order('id', { ascending: false });
+        .eq('active', true);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
       
       if (data && data.length > 0) {
         allProducts = data;
         console.log("✅ Loaded " + data.length + " products from Supabase");
       } else {
-        allProducts = demoProducts;
+        // ডেমো ডেটা
+        allProducts = [
+          { id: 1, name: "স্মার্টফোন", description: "অত্যাধুনিক স্মার্টফোন", price: 25000, image_url: "https://via.placeholder.com/300x300?text=Smartphone", active: true },
+          { id: 2, name: "ল্যাপটপ", description: "শক্তিশালী ল্যাপটপ", price: 75000, image_url: "https://via.placeholder.com/300x300?text=Laptop", active: true },
+          { id: 3, name: "হেডফোন", description: "উচ্চমানের অডিও", price: 5000, image_url: "https://via.placeholder.com/300x300?text=Headphone", active: true }
+        ];
         console.log("ℹ️ Using demo products");
       }
     } catch(e) {
       console.warn("⚠️ Supabase error, using demo products:", e);
-      allProducts = demoProducts;
+      allProducts = [
+        { id: 1, name: "স্মার্টফোন", description: "অত্যাধুনিক স্মার্টফোন", price: 25000, image_url: "https://via.placeholder.com/300x300?text=Smartphone", active: true },
+        { id: 2, name: "ল্যাপটপ", description: "শক্তিশালী ল্যাপটপ", price: 75000, image_url: "https://via.placeholder.com/300x300?text=Laptop", active: true },
+        { id: 3, name: "হেডফোন", description: "উচ্চমানের অডিও", price: 5000, image_url: "https://via.placeholder.com/300x300?text=Headphone", active: true }
+      ];
     }
     
-    loader.classList.add('hidden');
+    if (loader) loader.classList.add('hidden');
     renderProducts(allProducts);
   }
 
@@ -225,32 +292,35 @@
     const noProd = document.getElementById('noProducts');
     
     if (!products || products.length === 0) {
-      grid.innerHTML = '';
-      noProd.classList.remove('hidden');
+      if (grid) grid.innerHTML = '';
+      if (noProd) noProd.classList.remove('hidden');
       return;
     }
     
-    noProd.classList.add('hidden');
-    grid.innerHTML = products.map(p => `
-      <div class="bg-white rounded-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer border border-gray-200">
-        <img src="${p.image_url || 'https://via.placeholder.com/300'}" alt="${p.name}" class="w-full h-48 object-cover bg-gray-200">
-        <div class="p-4">
-          <h3 class="font-bold text-lg line-clamp-2">${p.name}</h3>
-          <p class="text-gray-600 text-sm mt-1 line-clamp-1">${p.description || ''}</p>
-          <div class="flex justify-between items-center mt-4">
-            <span class="text-2xl font-bold text-pink-500">${p.price} ৳</span>
-            <button onclick='addToCart(${JSON.stringify(p)})' class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg font-bold transition">
-              <i class="fas fa-cart-plus"></i>
-            </button>
+    if (noProd) noProd.classList.add('hidden');
+    if (grid) {
+      grid.innerHTML = products.map(p => `
+        <div class="bg-white rounded-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer border border-gray-200">
+          <img src="${p.image_url || 'https://via.placeholder.com/300'}" alt="${p.name}" class="w-full h-48 object-cover bg-gray-200">
+          <div class="p-4">
+            <h3 class="font-bold text-lg">${p.name}</h3>
+            <p class="text-gray-600 text-sm mt-1">${p.description || ''}</p>
+            <div class="flex justify-between items-center mt-4">
+              <span class="text-2xl font-bold text-pink-500">${p.price} ৳</span>
+              <button onclick='addToCart(${JSON.stringify(p).replace(/'/g, "&#39;")})' class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg font-bold transition">
+                <i class="fas fa-cart-plus"></i>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    `).join('');
+      `).join('');
+    }
   }
 
   // =============== CART FUNCTIONS ===============
   function updateCart() {
-    document.getElementById('cartCount').innerText = cart.length;
+    const cartCount = document.getElementById('cartCount');
+    if (cartCount) cartCount.innerText = cart.length;
     localStorage.setItem('zynxCart', JSON.stringify(cart));
   }
 
@@ -268,20 +338,22 @@
   function removeFromCart(id) {
     cart = cart.filter(p => p.id !== id);
     updateCart();
-    document.getElementById('cartBtn').click();
+    renderCart();
   }
 
   function renderCart() {
     const items = document.getElementById('cartItems');
     const total = document.getElementById('cartTotal');
     
+    if (!items) return;
+    
     if (cart.length === 0) {
       items.innerHTML = '<p class="text-center text-gray-500 py-4">কার্ট খালি</p>';
-      total.innerText = '০ ৳';
+      if (total) total.innerText = '০ ৳';
       return;
     }
     
-    items.innerHTML = cart.map((p, i) => `
+    items.innerHTML = cart.map(p => `
       <div class="flex justify-between items-center border-b pb-3">
         <div>
           <p class="font-bold">${p.name}</p>
@@ -292,12 +364,13 @@
     `).join('');
     
     const cartTotal = cart.reduce((sum, p) => sum + p.price * p.qty, 0);
-    total.innerText = cartTotal + ' ৳';
+    if (total) total.innerText = cartTotal + ' ৳';
   }
 
   // =============== SEARCH ===============
   function searchProducts() {
-    currentSearch = document.getElementById('searchInput').value.toLowerCase();
+    const searchInput = document.getElementById('searchInput');
+    const currentSearch = searchInput ? searchInput.value.toLowerCase() : '';
     if (!currentSearch) {
       renderProducts(allProducts);
       return;
@@ -308,6 +381,140 @@
       (p.description && p.description.toLowerCase().includes(currentSearch))
     );
     renderProducts(filtered);
+  }
+
+  // =============== ADMIN LOGIN ===============
+  function showAdminLogin() {
+    document.getElementById('adminLoginModal').classList.remove('hidden');
+  }
+  
+  function closeAdminLogin() {
+    document.getElementById('adminLoginModal').classList.add('hidden');
+  }
+  
+  document.getElementById('adminLoginForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const email = document.getElementById('adminEmail').value;
+    const password = document.getElementById('adminPassword').value;
+    
+    try {
+      // Supabase Auth দিয়ে লগইন
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+      
+      if (error) throw error;
+      
+      if (data.user) {
+        currentAdmin = data.user;
+        showToast('✅ অ্যাডমিন লগইন সফল!');
+        closeAdminLogin();
+        document.getElementById('adminDashboard').classList.remove('hidden');
+        loadAdminProducts();
+      }
+    } catch(e) {
+      showToast('❌ লগইন ব্যর্থ: ' + e.message);
+    }
+  });
+  
+  function logoutAdmin() {
+    currentAdmin = null;
+    document.getElementById('adminDashboard').classList.add('hidden');
+    showToast('✅ লগআউট সফল');
+  }
+  
+  function showAddProductForm() {
+    const form = document.getElementById('addProductForm');
+    if (form) form.classList.toggle('hidden');
+  }
+  
+  async function addProduct() {
+    const name = document.getElementById('prodName').value;
+    const price = parseFloat(document.getElementById('prodPrice').value);
+    const image_url = document.getElementById('prodImage').value || null;
+    const description = document.getElementById('prodDesc').value || null;
+    
+    if (!name || !price) {
+      showToast('❌ নাম এবং দাম দিন');
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .insert([{
+          name: name,
+          price: price,
+          image_url: image_url,
+          description: description,
+          active: true,
+          created_at: new Date().toISOString()
+        }]);
+      
+      if (error) throw error;
+      
+      showToast('✅ পণ্য যোগ সফল!');
+      document.getElementById('prodName').value = '';
+      document.getElementById('prodPrice').value = '';
+      document.getElementById('prodImage').value = '';
+      document.getElementById('prodDesc').value = '';
+      document.getElementById('addProductForm').classList.add('hidden');
+      loadProducts();
+      loadAdminProducts();
+    } catch(e) {
+      showToast('❌ পণ্য যোগ ব্যর্থ: ' + e.message);
+    }
+  }
+  
+  async function loadAdminProducts() {
+    const container = document.getElementById('adminProductsList');
+    if (!container) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        container.innerHTML = data.map(p => `
+          <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+            <div>
+              <p class="font-bold">${p.name}</p>
+              <p class="text-sm text-gray-600">${p.price} ৳</p>
+            </div>
+            <button onclick="deleteProduct(${p.id})" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm">Delete</button>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = '<p class="text-gray-500">কোনো পণ্য নেই</p>';
+      }
+    } catch(e) {
+      console.error(e);
+    }
+  }
+  
+  async function deleteProduct(id) {
+    if (!confirm('পণ্য ডিলিট করবেন?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      showToast('✅ পণ্য ডিলিট সফল');
+      loadProducts();
+      loadAdminProducts();
+    } catch(e) {
+      showToast('❌ ডিলিট ব্যর্থ: ' + e.message);
+    }
   }
 
   // =============== CHECKOUT ===============
@@ -335,17 +542,17 @@
       return true;
     } catch(e) {
       console.warn("⚠️ Supabase order error:", e);
-      return true; // Continue anyway
+      return true;
     }
   }
 
   // =============== EVENT LISTENERS ===============
-  document.getElementById('cartBtn').addEventListener('click', () => {
+  document.getElementById('cartBtn')?.addEventListener('click', () => {
     renderCart();
     document.getElementById('cartModal').classList.remove('hidden');
   });
 
-  document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+  document.getElementById('checkoutForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     if (cart.length === 0) {
@@ -401,13 +608,15 @@
 
   function showToast(msg) {
     const t = document.getElementById('toast');
-    t.innerText = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
+    if (t) {
+      t.innerText = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
   }
 
   // =============== INITIALIZE ===============
-  document.getElementById('searchInput').addEventListener('keypress', (e) => {
+  document.getElementById('searchInput')?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') searchProducts();
   });
 
