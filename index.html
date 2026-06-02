@@ -2,401 +2,235 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Zynxbd - আপনার বিশ্বস্ত অনলাইন শপ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zynxbd - অনলাইন শপ</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    .toast { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: white; padding: 10px 20px; border-radius: 40px; z-index: 9999; opacity: 0; transition: 0.3s; pointer-events: none; }
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: white; padding: 10px 20px; border-radius: 40px; z-index: 9999; opacity: 0; transition: 0.3s; }
     .toast.show { opacity: 1; }
-    .cart-badge { position: absolute; top: -8px; right: -8px; background: #ff4f63; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; }
   </style>
 </head>
-<body>
-
-<!-- Loader -->
-<div id="loader" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
-  <div class="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
-</div>
+<body class="bg-gray-50">
 
 <!-- Header -->
-<header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md shadow-sm">
-  <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-    <a href="#" class="text-2xl font-bold text-gray-800">Zynx<span class="text-pink-500">bd</span></a>
-    <div class="flex items-center gap-5">
+<header class="sticky top-0 z-40 bg-white shadow-sm">
+  <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold">Zynx<span class="text-pink-500">bd</span></h1>
+    <div class="flex gap-4">
+      <a href="admin.html" class="text-pink-500 hover:underline font-medium">🔐 Admin</a>
       <button id="cartBtn" class="relative text-xl">
         <i class="fas fa-shopping-cart"></i>
-        <span id="cartCount" class="cart-badge">0</span>
+        <span id="cartCount" class="absolute -top-2 -right-2 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
       </button>
-      <a href="admin.html" class="text-pink-500 hover:underline text-sm font-medium">🔐 Admin</a>
-      <button id="menuBtn" class="md:hidden text-xl"><i class="fas fa-bars"></i></button>
     </div>
   </div>
-  <nav id="mobileMenu" class="hidden md:flex bg-white border-t px-4 py-2 gap-6 justify-center text-sm font-medium">
-    <a href="#home" class="hover:text-pink-500">হোম</a>
-    <a href="#products" class="hover:text-pink-500">প্রোডাক্ট</a>
-    <a href="#contact" class="hover:text-pink-500">যোগাযোগ</a>
-  </nav>
 </header>
 
 <!-- Hero -->
-<section id="home" class="relative overflow-hidden bg-gradient-to-r from-indigo-900 to-purple-800 text-white py-16 md:py-24">
-  <div class="container mx-auto px-4 text-center">
-    <h1 class="text-4xl md:text-6xl font-bold mb-4">Zynxbd - সেরা পণ্য, সেরা দাম</h1>
-    <p class="text-lg md:text-xl mb-8">ইলেকট্রনিক্স, ফ্যাশন, হোম অ্যাপ্লায়েন্স আরও অনেক কিছু</p>
-    <button onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})" class="bg-pink-500 hover:bg-pink-600 px-6 py-3 rounded-full font-semibold transition">শপিং শুরু করুন</button>
-  </div>
-  <div class="absolute -bottom-16 left-0 right-0 h-32 bg-white rounded-t-3xl"></div>
+<section class="bg-gradient-to-r from-pink-500 to-purple-600 text-white py-20 text-center">
+  <h2 class="text-4xl font-bold mb-4">সেরা পণ্য, সেরা দাম</h2>
+  <p class="text-lg mb-6">আপনার পছন্দের সব কিছু এক জায়গায়</p>
+  <button onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})" class="bg-white text-pink-500 px-8 py-3 rounded-full font-bold hover:bg-gray-100">শপিং শুরু করুন</button>
 </section>
 
 <!-- Products -->
-<section id="products" class="py-12 bg-white">
-  <div class="container mx-auto px-4">
-    <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
-      <h2 class="text-3xl font-bold">আমাদের <span class="text-pink-500">প্রোডাক্ট</span></h2>
-      <div class="flex gap-2">
-        <input type="text" id="searchInput" placeholder="🔍 পণ্য খুঁজুন..." class="border rounded-full px-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-pink-300">
-        <button id="searchBtn" class="bg-pink-500 text-white px-4 rounded-full"><i class="fas fa-search"></i></button>
-      </div>
-    </div>
-    <div id="categoryTabs" class="flex flex-wrap gap-2 mb-8 justify-center"></div>
-    <div id="productsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"></div>
+<section id="products" class="max-w-6xl mx-auto px-4 py-12">
+  <h2 class="text-3xl font-bold mb-8">আমাদের প্রোডাক্ট</h2>
+  <div class="mb-6 flex gap-2">
+    <input type="text" id="search" placeholder="খুঁজুন..." class="flex-1 border rounded-lg p-2">
+    <button onclick="searchProducts()" class="bg-pink-500 text-white px-6 rounded-lg">🔍</button>
   </div>
+  <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-4 gap-6"></div>
 </section>
-
-<!-- Features -->
-<section class="py-10 bg-gray-50">
-  <div class="container mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-    <div><i class="fas fa-truck-fast text-pink-500 text-3xl"></i><p class="mt-2 font-semibold">দ্রুত ডেলিভারি</p></div>
-    <div><i class="fas fa-shield-alt text-pink-500 text-3xl"></i><p class="mt-2 font-semibold">নিরাপদ পেমেন্ট</p></div>
-    <div><i class="fas fa-headset text-pink-500 text-3xl"></i><p class="mt-2 font-semibold">২৪/৭ সাপোর্ট</p></div>
-    <div><i class="fas fa-undo-alt text-pink-500 text-3xl"></i><p class="mt-2 font-semibold">সহজ রিটার্ন</p></div>
-  </div>
-</section>
-
-<!-- Contact -->
-<section id="contact" class="py-12 bg-white">
-  <div class="container mx-auto px-4 text-center">
-    <h2 class="text-3xl font-bold mb-6">যোগাযোগ <span class="text-pink-500">করুন</span></h2>
-    <div class="flex flex-wrap justify-center gap-6">
-      <div class="bg-gray-100 p-4 rounded-2xl"><i class="fab fa-whatsapp text-green-500 text-2xl"></i><p class="mt-1">01878877746</p></div>
-      <div class="bg-gray-100 p-4 rounded-2xl"><i class="fas fa-envelope text-pink-500 text-2xl"></i><p class="mt-1">support@zynxbd.com</p></div>
-      <div class="bg-gray-100 p-4 rounded-2xl"><i class="fab fa-facebook text-blue-600 text-2xl"></i><p class="mt-1">/zynxbd</p></div>
-    </div>
-  </div>
-</section>
-
-<footer class="bg-gray-800 text-white py-6 text-center text-sm">
-  © ২০২৬ Zynxbd | Designed & Developed by WebNest BD
-</footer>
 
 <!-- Cart Modal -->
-<div id="cartModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-  <div class="bg-white rounded-2xl max-w-md w-full max-h-[80vh] overflow-auto">
-    <div class="flex justify-between items-center p-4 border-b">
-      <h3 class="text-xl font-bold">আপনার কার্ট</h3>
-      <button id="closeCartBtn" class="text-2xl">&times;</button>
+<div id="cartModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-lg max-w-md w-full p-6">
+    <h3 class="text-2xl font-bold mb-4">কার্ট</h3>
+    <div id="cartItems" class="space-y-3 mb-4 max-h-64 overflow-y-auto"></div>
+    <div class="flex justify-between font-bold mb-4">
+      <span>মোট:</span>
+      <span id="cartTotal">০ ৳</span>
     </div>
-    <div id="cartItems" class="p-4 space-y-3"></div>
-    <div class="p-4 border-t">
-      <div class="flex justify-between font-bold text-lg mb-3">মোট: <span id="cartTotal">০ টাকা</span></div>
-      <button id="checkoutBtn" class="w-full bg-pink-500 text-white py-2 rounded-full font-semibold">অর্ডার করুন</button>
-    </div>
+    <button onclick="checkout()" class="w-full bg-pink-500 text-white py-2 rounded-lg font-bold mb-2">অর্ডার করুন</button>
+    <button onclick="document.getElementById('cartModal').classList.add('hidden')" class="w-full border py-2 rounded-lg">বন্ধ করুন</button>
   </div>
 </div>
 
 <!-- Checkout Modal -->
-<div id="checkoutModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-  <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
-    <div class="p-4 border-b flex justify-between">
-      <h3 class="text-xl font-bold">অর্ডার সম্পন্ন করুন</h3>
-      <button id="closeCheckoutBtn" class="text-2xl">&times;</button>
-    </div>
-    <form id="checkoutForm" class="p-4 space-y-4">
-      <input type="text" name="name" placeholder="আপনার নাম" required class="w-full border rounded-xl p-2">
-      <input type="tel" name="whatsapp" placeholder="WhatsApp নাম্বার" required class="w-full border rounded-xl p-2">
-      <input type="email" name="email" placeholder="ইমেইল" required class="w-full border rounded-xl p-2">
-      <input type="text" name="address" placeholder="ঠিকানা" required class="w-full border rounded-xl p-2">
-      <div class="grid grid-cols-2 gap-2">
-        <select id="paymentMethod" name="payment_method" required class="border rounded-xl p-2">
-          <option value="">মেথড সিলেক্ট</option>
-          <option value="bKash">bKash</option>
-          <option value="Nagad">Nagad</option>
-          <option value="Upay">Upay</option>
-          <option value="Rocket">Rocket</option>
-        </select>
-        <input type="text" name="transaction_id" placeholder="Trx ID" required class="border rounded-xl p-2">
-      </div>
-      <div id="paymentInstruction" class="bg-gray-100 p-3 rounded-xl text-sm hidden"></div>
-      <textarea name="message" rows="2" placeholder="অতিরিক্ত মেসেজ" class="w-full border rounded-xl p-2"></textarea>
-      <button type="submit" class="w-full bg-pink-500 text-white py-2 rounded-full font-semibold">অর্ডার কনফার্ম করুন</button>
+<div id="checkoutModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+    <h3 class="text-2xl font-bold mb-4">অর্ডার তথ্য</h3>
+    <form id="checkoutForm" class="space-y-3">
+      <input type="text" name="name" placeholder="নাম" required class="w-full border rounded-lg p-2">
+      <input type="tel" name="phone" placeholder="ফোন" required class="w-full border rounded-lg p-2">
+      <input type="email" name="email" placeholder="ইমেইল" required class="w-full border rounded-lg p-2">
+      <input type="text" name="address" placeholder="ঠিকানা" required class="w-full border rounded-lg p-2">
+      <select name="payment" required class="w-full border rounded-lg p-2">
+        <option value="">পেমেন্ট পদ্ধতি</option>
+        <option value="bKash">bKash</option>
+        <option value="Nagad">Nagad</option>
+      </select>
+      <input type="text" name="trx_id" placeholder="Trx ID" required class="w-full border rounded-lg p-2">
+      <button type="submit" class="w-full bg-pink-500 text-white py-2 rounded-lg font-bold">অর্ডার নিশ্চিত করুন</button>
     </form>
   </div>
 </div>
 
-<div id="toastMsg" class="toast"></div>
+<footer class="bg-gray-800 text-white text-center py-4 mt-12">
+  © ২০২৬ Zynxbd
+</footer>
+
+<div id="toast" class="toast"></div>
 
 <script>
-  // SUPABASE INITIALIZATION
   const SUPABASE_URL = "https://omotctqkemtuogpnlywo.supabase.co";
   const SUPABASE_ANON = "sb_publishable_6vLOupcl0H3fPfkOEdHYuw_mNCC_3IO";
   
   let supabase;
   try {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-    console.log("✅ Supabase initialized in index.html");
   } catch(e) {
-    console.error("❌ Supabase init error:", e);
+    console.error("Supabase error:", e);
   }
 
+  let products = [];
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
   const demoProducts = [
-    { id: 1, name: "Canva Pro", description: "প্রিমিয়াম ডিজাইন অ্যাক্সেস, ১ বছর", price: 299, category: "subscription", image_url: "https://i.postimg.cc/9z3XFmSb/20260531-232841-0000.jpg" },
-    { id: 2, name: "CapCut Pro", description: "ভিডিও এডিটিং প্রো টুলস", price: 249, category: "subscription", image_url: "https://i.postimg.cc/tgYLgk46/20260531-211351-0000.jpg" },
-    { id: 3, name: "Adobe Creative Cloud", description: "সব Adobe অ্যাপস", price: 999, category: "subscription", image_url: "https://i.postimg.cc/HL7gjDwn/AI-Thumbnail-Creation-20260531-233929-0000.jpg" },
+    { id: 1, name: "ইলেকট্রনিক্স ১", price: 5000, image_url: "https://via.placeholder.com/300" },
+    { id: 2, name: "ইলেকট্রনিক্স ২", price: 3000, image_url: "https://via.placeholder.com/300" },
+    { id: 3, name: "পোশাক ১", price: 1500, image_url: "https://via.placeholder.com/300" },
+    { id: 4, name: "পোশাক ২", price: 2000, image_url: "https://via.placeholder.com/300" }
   ];
 
-  let products = [];
-  let cart = JSON.parse(localStorage.getItem('zynxCart')) || [];
-  let currentCategory = 'all';
-  let searchTerm = '';
+  async function loadProducts() {
+    try {
+      const { data, error } = await supabase.from('products').select('*').limit(12);
+      if (error) throw error;
+      products = data || demoProducts;
+    } catch(e) {
+      products = demoProducts;
+    }
+    renderProducts();
+    updateCart();
+  }
 
-  const loader = document.getElementById('loader');
-  const productsGrid = document.getElementById('productsGrid');
-  const categoryTabs = document.getElementById('categoryTabs');
-  const cartBtn = document.getElementById('cartBtn');
-  const cartCount = document.getElementById('cartCount');
-  const cartModal = document.getElementById('cartModal');
-  const closeCartBtn = document.getElementById('closeCartBtn');
-  const checkoutBtn = document.getElementById('checkoutBtn');
-  const checkoutModal = document.getElementById('checkoutModal');
-  const closeCheckoutBtn = document.getElementById('closeCheckoutBtn');
-  const searchInput = document.getElementById('searchInput');
-  const searchBtn = document.getElementById('searchBtn');
-  const paymentMethodSelect = document.getElementById('paymentMethod');
-  const paymentInstructionDiv = document.getElementById('paymentInstruction');
+  function renderProducts() {
+    document.getElementById('productsGrid').innerHTML = products.map(p => `
+      <div class="border rounded-lg overflow-hidden hover:shadow-lg transition">
+        <img src="${p.image_url || 'https://via.placeholder.com/300'}" class="w-full h-48 object-cover" alt="${p.name}">
+        <div class="p-4">
+          <h3 class="font-bold">${p.name}</h3>
+          <p class="text-lg font-bold text-pink-500 mt-2">${p.price} ৳</p>
+          <button onclick='addCart(${JSON.stringify(p)})' class="w-full bg-pink-500 text-white py-2 rounded mt-2">কিনুন</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function addCart(product) {
+    const existing = cart.find(p => p.id === product.id);
+    if (existing) {
+      existing.qty++;
+    } else {
+      cart.push({...product, qty: 1});
+    }
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCart();
+    showToast(product.name + ' কার্টে যোগ হয়েছে');
+  }
+
+  function updateCart() {
+    document.getElementById('cartCount').innerText = cart.length;
+  }
+
+  document.getElementById('cartBtn').addEventListener('click', () => {
+    const modal = document.getElementById('cartModal');
+    modal.classList.remove('hidden');
+    document.getElementById('cartItems').innerHTML = cart.map((p, i) => `
+      <div class="flex justify-between border-b pb-2">
+        <div>
+          <p class="font-bold">${p.name}</p>
+          <p class="text-sm">${p.price} ৳ x ${p.qty}</p>
+        </div>
+        <button onclick='removeCart(${i})' class="text-red-500">সরান</button>
+      </div>
+    `).join('');
+    const total = cart.reduce((sum, p) => sum + p.price * p.qty, 0);
+    document.getElementById('cartTotal').innerText = total + ' ৳';
+  });
+
+  function removeCart(idx) {
+    cart.splice(idx, 1);
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCart();
+    document.getElementById('cartBtn').click();
+  }
+
+  function checkout() {
+    if (cart.length === 0) {
+      showToast('কার্ট খালি');
+      return;
+    }
+    document.getElementById('cartModal').classList.add('hidden');
+    document.getElementById('checkoutModal').classList.remove('hidden');
+  }
+
+  document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    const total = cart.reduce((sum, p) => sum + p.price * p.qty, 0);
+    
+    try {
+      await supabase.from('orders').insert({
+        customer_name: form.get('name'),
+        phone: form.get('phone'),
+        email: form.get('email'),
+        address: form.get('address'),
+        product_name: cart.map(p => p.name).join(', '),
+        quantity: cart.length,
+        total_price: total,
+        payment_method: form.get('payment'),
+        trx_id: form.get('trx_id'),
+        status: 'Pending'
+      });
+      showToast('✅ অর্ডার সফল!');
+      cart = [];
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCart();
+      document.getElementById('checkoutModal').classList.add('hidden');
+      document.getElementById('checkoutForm').reset();
+    } catch(e) {
+      showToast('❌ Error: ' + e.message);
+    }
+  });
+
+  function searchProducts() {
+    const term = document.getElementById('search').value.toLowerCase();
+    const filtered = products.filter(p => p.name.toLowerCase().includes(term));
+    document.getElementById('productsGrid').innerHTML = filtered.map(p => `
+      <div class="border rounded-lg overflow-hidden hover:shadow-lg transition">
+        <img src="${p.image_url || 'https://via.placeholder.com/300'}" class="w-full h-48 object-cover">
+        <div class="p-4">
+          <h3 class="font-bold">${p.name}</h3>
+          <p class="text-lg font-bold text-pink-500 mt-2">${p.price} ৳</p>
+          <button onclick='addCart(${JSON.stringify(p)})' class="w-full bg-pink-500 text-white py-2 rounded mt-2">কিনুন</button>
+        </div>
+      </div>
+    `).join('');
+  }
 
   function showToast(msg) {
-    const t = document.getElementById('toastMsg');
+    const t = document.getElementById('toast');
     t.innerText = msg;
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3000);
   }
 
-  function updateCartUI() {
-    cartCount.innerText = cart.length;
-    localStorage.setItem('zynxCart', JSON.stringify(cart));
-  }
-
-  function renderCartItems() {
-    const cartItemsDiv = document.getElementById('cartItems');
-    cartItemsDiv.innerHTML = cart.map((item, idx) => `
-      <div class="flex justify-between items-center border-b pb-2">
-        <div>
-          <p class="font-semibold">${item.name}</p>
-          <p class="text-sm text-gray-600">${item.price} ৳ × ${item.quantity}</p>
-        </div>
-        <button onclick="removeFromCart(${idx})" class="text-red-500 text-sm">সরান</button>
-      </div>
-    `).join('');
-
-    const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    document.getElementById('cartTotal').innerText = total + ' টাকা';
-  }
-
-  window.addToCart = function(product) {
-    const existing = cart.find(p => p.id === product.id);
-    if (existing) {
-      existing.quantity++;
-    } else {
-      cart.push({ ...product, quantity: 1 });
-    }
-    updateCartUI();
-    showToast(`${product.name} কার্টে যোগ হয়েছে`);
-  }
-
-  window.removeFromCart = function(idx) {
-    cart.splice(idx, 1);
-    updateCartUI();
-    renderCartItems();
-  }
-
-  function filterAndRenderProducts() {
-    let filtered = products;
-
-    if (currentCategory !== 'all') {
-      filtered = filtered.filter(p => p.category === currentCategory);
-    }
-
-    if (searchTerm) {
-      filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(searchTerm) ||
-        p.description.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    productsGrid.innerHTML = filtered.map(p => `
-      <div class="rounded-2xl overflow-hidden bg-gray-50 hover:shadow-lg transition">
-        <img src="${p.image_url}" alt="${p.name}" class="w-full h-48 object-cover">
-        <div class="p-4">
-          <h3 class="font-bold text-sm line-clamp-2">${p.name}</h3>
-          <p class="text-xs text-gray-600 mt-1 line-clamp-2">${p.description || ''}</p>
-          <div class="flex justify-between items-center mt-3">
-            <span class="text-pink-500 font-bold">৳${p.price}</span>
-            <button onclick='addToCart(${JSON.stringify(p)})' class="bg-pink-500 text-white px-3 py-1 rounded-full text-sm"><i class="fas fa-cart-plus"></i> কিনুন</button>
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function renderCategories() {
-    const cats = ['all', ...new Set(products.map(p => p.category).filter(Boolean))];
-    categoryTabs.innerHTML = cats.map(cat => `<button class="tab-btn ${currentCategory === cat ? 'bg-pink-500 text-white' : 'bg-gray-200'} px-4 py-1 rounded-full text-sm capitalize" data-cat="${cat}">${cat === 'all' ? 'সব' : cat}</button>`).join('');
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentCategory = btn.dataset.cat;
-        filterAndRenderProducts();
-        renderCategories();
-      });
-    });
-  }
-
-  function showPaymentInstruction(method) {
-    const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    const number = "01878877746";
-    let html = '';
-    if (method === 'bKash') html = `<b>bKash নির্দেশনা</b><br>Send Money to ${number} (${total} টাকা) <br>Trx ID দিন।`;
-    else if (method === 'Nagad') html = `<b>Nagad নির্দেশনা</b><br>Send Money to ${number} (${total} টাকা) <br>Trx ID দিন।`;
-    else if (method === 'Upay') html = `<b>Upay নির্দেশনা</b><br>Send Money to ${number} (${total} টাকা) <br>Trx ID দিন।`;
-    else if (method === 'Rocket') html = `<b>Rocket নির্দেশনা</b><br>Send Money to ${number} (${total} টাকা) <br>Trx ID দিন।`;
-    paymentInstructionDiv.innerHTML = html;
-    paymentInstructionDiv.classList.remove('hidden');
-  }
-
-  paymentMethodSelect?.addEventListener('change', (e) => {
-    if (e.target.value) showPaymentInstruction(e.target.value);
-    else paymentInstructionDiv.classList.add('hidden');
-  });
-
-  async function submitOrder(orderData) {
-    const totalPrice = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    const productNames = cart.map(i => `${i.name} x${i.quantity}`).join(', ');
-    
-    const order = {
-      customer_name: orderData.name,
-      phone: orderData.whatsapp,
-      email: orderData.email,
-      address: orderData.address,
-      product_name: productNames,
-      total_price: totalPrice,
-      payment_method: orderData.payment_method,
-      trx_id: orderData.transaction_id,
-      status: "Pending",
-      quantity: cart.length,
-      created_at: new Date().toISOString()
-    };
-
-    try {
-      const { error } = await supabase.from('orders').insert([order]);
-      if (error) throw error;
-      console.log("✅ Order saved to Supabase");
-    } catch (e) {
-      console.warn("Supabase order error:", e);
-    }
-
-    const TG_BOT_TOKEN = "8288112543:AAFi-TrAM23IhDIDtlA234gw4jwi-5cCXvc";
-    const text = `<b>🛒 নতুন অর্ডার (Zynxbd)</b>\n\n👤 নাম: ${orderData.name}\n📱 WhatsApp: ${orderData.whatsapp}\n📧 ইমেইল: ${orderData.email}\n📍 ঠিকানা: ${orderData.address}\n📦 পণ্য: ${productNames}\n💰 মোট: ${totalPrice} ৳\n💳 পেমেন্ট: ${orderData.payment_method}\n🔖 TrxID: ${orderData.transaction_id}\n💬 মেসেজ: ${orderData.message || '—'}`;
-    try {
-      const res = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
-        method: 'POST', 
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ chat_id: '5948968989', text, parse_mode: 'HTML' })
-      });
-    } catch(e) { 
-      console.warn("Telegram error:", e); 
-    }
-  }
-
-  async function loadProducts() {
-    loader.classList.remove('hidden');
-    try {
-      const { data, error } = await supabase.from('products').select('*');
-      
-      if (error) throw error;
-      if (data && data.length) {
-        products = data;
-        console.log("✅ Products loaded from Supabase");
-      } else {
-        products = demoProducts;
-        console.log("ℹ️ Using demo products");
-      }
-    } catch(e) {
-      console.warn("Supabase load error:", e);
-      products = demoProducts;
-    }
-    renderCategories();
-    filterAndRenderProducts();
-    loader.classList.add('hidden');
-  }
-
-  cartBtn?.addEventListener('click', () => { cartModal.classList.remove('hidden'); renderCartItems(); });
-  closeCartBtn?.addEventListener('click', () => cartModal.classList.add('hidden'));
-  checkoutBtn?.addEventListener('click', () => {
-    if (cart.length === 0) { showToast('কার্ট খালি'); return; }
-    cartModal.classList.add('hidden');
-    checkoutModal.classList.remove('hidden');
-    if (paymentMethodSelect.value) showPaymentInstruction(paymentMethodSelect.value);
-  });
-  closeCheckoutBtn?.addEventListener('click', () => checkoutModal.classList.add('hidden'));
-  searchBtn?.addEventListener('click', () => { searchTerm = searchInput.value; filterAndRenderProducts(); });
-  searchInput?.addEventListener('keyup', (e) => { if(e.key === 'Enter') { searchTerm = searchInput.value; filterAndRenderProducts(); } });
-
-  document.getElementById('checkoutForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const orderData = {
-      name: formData.get('name'),
-      whatsapp: formData.get('whatsapp'),
-      email: formData.get('email'),
-      address: formData.get('address'),
-      payment_method: formData.get('payment_method'),
-      transaction_id: formData.get('transaction_id'),
-      message: formData.get('message')
-    };
-    if (!orderData.payment_method || !orderData.transaction_id) { showToast('পেমেন্ট মেথড ও Trx ID দিন'); return; }
-    if (cart.length === 0) { showToast('কার্ট খালি'); return; }
-    const btn = e.target.querySelector('button[type="submit"]');
-    btn.disabled = true; 
-    btn.innerText = 'প্রক্রিয়াকরণ...';
-    try {
-      await submitOrder(orderData);
-      cart = [];
-      updateCartUI();
-      checkoutModal.classList.add('hidden');
-      showToast('✅ অর্ডার সফল! আমরা শীঘ্রই যোগাযোগ করব।');
-      e.target.reset();
-      paymentInstructionDiv.classList.add('hidden');
-    } catch (err) { 
-      showToast('❌ অর্ডার জমা দিতে সমস্যা: '+err.message); 
-    }
-    finally { 
-      btn.disabled = false; 
-      btn.innerText = 'অর্ডার কনফার্ম করুন'; 
-    }
-  });
-
-  const menuBtn = document.getElementById('menuBtn');
-  const mobileMenu = document.getElementById('mobileMenu');
-  menuBtn?.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
-
-  window.addEventListener('click', (e) => {
-    if (e.target === cartModal) cartModal.classList.add('hidden');
-    if (e.target === checkoutModal) checkoutModal.classList.add('hidden');
-  });
-
   loadProducts();
-  updateCartUI();
 </script>
 
 </body>
